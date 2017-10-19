@@ -17,9 +17,9 @@ public class ConsumerVerticle extends AbstractVerticle {
     }
 
     public void start(Future<Void> startFuture) {
-        LOG.info("Starting Consumer at address {}.", address);
+        LOG.info("Starting Consumer at address %s.", address);
         vertx.eventBus().consumer(address, message -> {
-            LOG.info("Received message {}.", message.body());
+            LOG.info("Received message %s.", message.body());
         });
     }
 }

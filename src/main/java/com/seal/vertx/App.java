@@ -47,9 +47,9 @@ public class App {
         DeploymentOptions opts = new DeploymentOptions().setWorker(true);
         vertx.deployVerticle(new ConsumerVerticle(address), opts, ar -> {
             if (ar.succeeded()) {
-                LOG.info("Deployed consumer at address {}", address);
+                LOG.info("Deployed consumer at address %s", address);
             } else {
-                LOG.info("Deployment of consumer at address {} failed.", address);
+                LOG.info("Deployment of consumer at address %s failed.", address);
             }
         });
     }
@@ -59,9 +59,9 @@ public class App {
         DeploymentOptions opts = new DeploymentOptions().setWorker(true);
         vertx.deployVerticle(new ProducerVerticle(address), opts, ar -> {
             if (ar.succeeded()) {
-                LOG.info("Deployed producer at address {}", address);
+                LOG.info("Deployed producer at address %s", address);
             } else {
-                LOG.info("Deployment of producer at address {} failed.", address);
+                LOG.info("Deployment of producer at address %s failed.", address);
             }
         });
     }

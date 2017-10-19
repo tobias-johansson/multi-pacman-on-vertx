@@ -17,7 +17,7 @@ public class ProducerVerticle extends AbstractVerticle {
     }
 
     public void start(Future<Void> startFuture) {
-        LOG.info("Producer sending hello to address {}.", address);
+        LOG.info("Producer sending hello to address %s.", address);
         vertx.eventBus().send(address, "hello");
     }
 }
