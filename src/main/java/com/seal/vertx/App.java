@@ -5,14 +5,16 @@ import com.seal.vertx.verticles.ProducerVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
-import io.vertx.ext.dropwizard.MetricsService;
+import io.vertx.servicediscovery.Record;
+import io.vertx.servicediscovery.ServiceDiscovery;
+import io.vertx.servicediscovery.types.MessageSource;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.Random;
 
 /**
  * Created by jacobsznajdman on 20/09/17.
@@ -47,18 +49,33 @@ public class App {
     }
 
     private static void deployConsumer(Vertx vertx) {
-        String address = "0";
+        Random rnd = new Random();
+        int intAddress = rnd.nextInt();
+        String address = String.valueOf(intAddress);
+        ServiceDiscovery discovery = ServiceDiscovery.create(vertx);
         DeploymentOptions opts = new DeploymentOptions().setWorker(false);
         vertx.deployVerticle(new ConsumerVerticle(address), opts, ar -> {
             LOG.info("Consumer deployed at address {}.", address);
+            Record record = new Record()
+                    .setType(MessageSource.TYPE)
+                    .setLocation(new JsonObject().put("address", address))
+                    .setName("consumer");
+            discovery.publish(record, pr -> {
+                if (ar.succeeded()) {
+                    // publication succeeded
+                    Record publishedRecord = pr.result();
+                    LOG.info("Published service {}", publishedRecord.getName());
+                } else {
+                    // publication failed
+                }
+            });
         });
     }
 
     private static void deployProducer(Vertx vertx) {
-        String address = "0";
         DeploymentOptions opts = new DeploymentOptions().setWorker(false);
-        vertx.deployVerticle(new ProducerVerticle(address), opts, ar -> {
-            LOG.info("Producer deployed at address {}.", address);
+        vertx.deployVerticle(new ProducerVerticle(), opts, ar -> {
+            LOG.info("Producer deployed.");
         });
     }
 }
