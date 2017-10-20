@@ -8,7 +8,11 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
+import io.vertx.ext.dropwizard.MetricsService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+
+import java.util.Set;
 
 /**
  * Created by jacobsznajdman on 20/09/17.
@@ -44,25 +48,17 @@ public class App {
 
     private static void deployConsumer(Vertx vertx) {
         String address = "0";
-        DeploymentOptions opts = new DeploymentOptions().setWorker(true);
+        DeploymentOptions opts = new DeploymentOptions().setWorker(false);
         vertx.deployVerticle(new ConsumerVerticle(address), opts, ar -> {
-            if (ar.succeeded()) {
-                LOG.info("Deployed consumer at address %s", address);
-            } else {
-                LOG.info("Deployment of consumer at address %s failed.", address);
-            }
+            LOG.info("Consumer deployed at address {}.", address);
         });
     }
 
     private static void deployProducer(Vertx vertx) {
         String address = "0";
-        DeploymentOptions opts = new DeploymentOptions().setWorker(true);
+        DeploymentOptions opts = new DeploymentOptions().setWorker(false);
         vertx.deployVerticle(new ProducerVerticle(address), opts, ar -> {
-            if (ar.succeeded()) {
-                LOG.info("Deployed producer at address %s", address);
-            } else {
-                LOG.info("Deployment of producer at address %s failed.", address);
-            }
+            LOG.info("Producer deployed at address {}.", address);
         });
     }
 }
