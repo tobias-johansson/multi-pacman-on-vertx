@@ -10,12 +10,14 @@ public class PlayerState {
     public final Player player;
     public final Location location;
     public final Direction direction;
+    public final Status status;
     private static final Random rnd = new Random();
 
-    public PlayerState(Player player, Location location, Direction direction) {
+    public PlayerState(Player player, Location location, Direction direction, Status status) {
         this.player = player;
         this.location = location;
         this.direction = direction;
+        this.status = status;
     }
 
     public static PlayerState randomState(GameState transforming, Player newPlayer) {
@@ -40,6 +42,6 @@ public class PlayerState {
             default:
                 break;
         }
-        return new PlayerState(newPlayer, location, direction);
+        return new PlayerState(newPlayer, location, direction, Status.ALIVE);
     }
 }
