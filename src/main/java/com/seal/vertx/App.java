@@ -1,14 +1,5 @@
 package com.seal.vertx;
 
-import com.google.gson.Gson;
-import com.seal.vertx.domain.GameState;
-import com.seal.vertx.domain.Location;
-import com.seal.vertx.domain.Maze;
-import com.seal.vertx.domain.MazeData;
-import com.seal.vertx.domain.SrcMazeData;
-import com.seal.vertx.domain.SrcMazeData.PositionX;
-import com.seal.vertx.domain.SrcMazeData.PositionY;
-import com.seal.vertx.message.ActionMessage;
 import com.seal.vertx.verticles.GameVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -20,8 +11,6 @@ import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +20,7 @@ public class App {
 
     public static void main(String[] args) throws IOException {
     	// one time gen of our datafile
-    	Maze.GenerateMazeFile("client/platzhersh.json", "client/maze.json");
+    	//Maze.GenerateMazeFile("client/platzhersh.json", "client/maze.json");
     	
         Vertx vertx = Vertx.vertx();
         HttpServer server = vertx.createHttpServer();

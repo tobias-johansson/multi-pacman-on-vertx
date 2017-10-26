@@ -21,9 +21,11 @@ import static com.seal.vertx.domain.Direction.UP;
 public class Engine {
     private GameState current;
     private GameVerticle gameVerticle;
+    private Maze maze;
 
     public Engine(GameVerticle gameVerticle) {
         this.gameVerticle = gameVerticle;
+        this.maze = new Maze();
     }
 
     public void start() {
@@ -118,7 +120,9 @@ public class Engine {
             }
             float x = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.x + ps.direction.getX() * Constants.timeStep));
             float y = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.y + ps.direction.getY() * Constants.timeStep));
-            return new PlayerState(ps.player, new Location(x, y), ps.direction, ps.status);
+            Location check = new Location(x,y);
+            Location adjusted = (maze.checkWallCollision(check)) ? ps.location : check;
+            return new PlayerState(ps.player, adjusted, ps.direction, ps.status);
         }).collect(Collectors.toList());
     }
 

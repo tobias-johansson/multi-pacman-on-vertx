@@ -1,5 +1,7 @@
 package com.seal.vertx.verticles;
 
+import java.io.IOException;
+
 import com.google.gson.Gson;
 import com.seal.vertx.Constants;
 import com.seal.vertx.Engine;
