@@ -28,6 +28,7 @@ public class Maze {
 	    	mazeData.wallBlocks.stream().forEach(loc -> quadTree.set(loc.x, loc.y, new Wall(loc)));
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(-1);
 			// diediedie
 		}
     }
