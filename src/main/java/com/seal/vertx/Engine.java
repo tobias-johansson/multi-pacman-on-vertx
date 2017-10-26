@@ -19,7 +19,7 @@ public class Engine {
     }
 
     public GameState update(Map<String, Action> actions) {
-        
+		return current;
     }
 
 }

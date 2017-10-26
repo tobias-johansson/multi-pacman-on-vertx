@@ -1,7 +1,10 @@
 package com.seal.vertx;
 
+import com.seal.vertx.domain.GameState;
 import com.seal.vertx.message.ActionMessage;
 import com.seal.vertx.message.ActionMessageCodec;
+import com.seal.vertx.message.GameStateCodec;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
@@ -51,6 +54,7 @@ public class App {
 
     private static void addCodecs(Vertx vertx) {
         vertx.eventBus().registerDefaultCodec(ActionMessage.class, new ActionMessageCodec());
+        vertx.eventBus().registerDefaultCodec(GameState.class, new GameStateCodec());
     }
 
 }
