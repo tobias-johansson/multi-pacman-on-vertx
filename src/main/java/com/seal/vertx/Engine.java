@@ -116,8 +116,8 @@ public class Engine {
             if (ps.status == Status.DEAD) {
                 return ps;
             }
-            float x = Math.min(1.0f, Math.max(0.0f, ps.location.x + ps.direction.getX() * Constants.timeStep));
-            float y = Math.min(1.0f, Math.max(0.0f, ps.location.y + ps.direction.getY() * Constants.timeStep));
+            float x = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.x + ps.direction.getX() * Constants.timeStep));
+            float y = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.y + ps.direction.getY() * Constants.timeStep));
             return new PlayerState(ps.player, new Location(x, y), ps.direction, ps.status);
         }).collect(Collectors.toList());
     }

@@ -9,36 +9,13 @@ $(function () {
     var app = new PIXI.Application(800, 600, {backgroundColor : 0x1099bb});
     document.body.appendChild(app.view);
 
-    var walls = [
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ]
-
     sprites = {};
 
     PIXI.loader
         .add("wall",   "images/wall.png")
         .add("pacman", "images/pacman2.png")
+        .add("ghost1", "images/ghost1.png")
         .load(function() {
-
-            for (i = 0; i < walls.length; i++) {
-                for (j = 0; j < walls[i].length; j++) {
-                    if (walls[i][j] === 1) {
-                        var wall = new PIXI.Sprite(PIXI.loader.resources.wall.texture);
-                        wall.x = i * 32;
-                        wall.y = j * 32;
-                        app.stage.addChild(wall);
-                    }
-                }
-            }
 
             document.addEventListener('keydown', function(key) {
                 switch(key.keyCode) {
@@ -65,11 +42,37 @@ $(function () {
                     state.playerStates.forEach(function(ps) {
                         var sprite = sprites[ps.player.id];
                         if (!sprite) {
-                            sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
+                            if (ps.player.type === 'GHOST') {
+                                sprite = new PIXI.Sprite(PIXI.loader.resources.ghost1.texture);
+                            } else {
+                                sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
+                            }
                             app.stage.addChild(sprite);
                         }
-                        sprite.x = ps.location.x * app.renderer.width;
-                        sprite.y = ps.location.y * app.renderer.height;
+                        sprite.anchor.set(0.5);
+                        sprite.x = ps.location.x * app.renderer.width  + 32/2;
+                        sprite.y = ps.location.y * app.renderer.height + 32/2;
+                        switch(ps.direction) {
+                            case 'UP':
+                                if (ps.player.type === 'GHOST') break;
+                                sprite.rotation = Math.PI * -0.5;
+                                sprite.scale.x = 1;
+                                break;
+                            case 'DOWN':
+                                if (ps.player.type === 'GHOST') break;
+                                sprite.rotation = Math.PI * 0.5;
+                                sprite.scale.x = 1;
+                                break;
+                            case 'RIGHT':
+                                if (ps.player.type === 'GHOST') break;
+                                sprite.rotation = 0;
+                                sprite.scale.x = 1;
+                                break;
+                            case 'LEFT':
+                                sprite.rotation = 0;
+                                sprite.scale.x = -1;
+                                break;
+                        }
                         sprites[ps.player.id] = sprite;
                     });
                 });
