@@ -19,7 +19,13 @@ public class ConsumerVerticle extends AbstractVerticle {
     public void start() {
         LOG.info("Starting Consumer at address {}.", address);
         vertx.eventBus().consumer(address, message -> {
-            LOG.info("Received message {}.", message.body());
+            LOG.info("Received message {} @ {}, {}", message.body(), this.deploymentID(), address);
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            LOG.info("Done waiting");
         });
     }
 }

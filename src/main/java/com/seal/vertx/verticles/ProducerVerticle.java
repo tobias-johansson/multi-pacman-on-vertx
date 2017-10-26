@@ -20,7 +20,7 @@ public class ProducerVerticle extends AbstractVerticle {
     }
 
     public void start() {
-        vertx.setPeriodic(5000, l -> {
+        vertx.setPeriodic(1000, l -> {
             ServiceDiscovery discovery = ServiceDiscovery.create(vertx);
             discovery.getRecords(new JsonObject().put("name", "consumer"), ar -> {
                 if (ar.succeeded()) {

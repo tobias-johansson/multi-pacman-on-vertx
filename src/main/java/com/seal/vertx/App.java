@@ -30,7 +30,8 @@ public class App {
                 .setClustered(true)
                 .setClusterHost("127.0.0.1")
                 .setHAEnabled(true)
-                .setHAGroup("dev");
+                .setHAGroup("dev")
+                .setWorkerPoolSize(1);
         Vertx.clusteredVertx(options, res -> {
             if (res.succeeded()) {
                 Vertx vertx = res.result();
@@ -53,15 +54,19 @@ public class App {
         int intAddress = rnd.nextInt();
         String address = String.valueOf(intAddress);
         ServiceDiscovery discovery = ServiceDiscovery.create(vertx);
-        DeploymentOptions opts = new DeploymentOptions().setWorker(false);
+        DeploymentOptions opts = new DeploymentOptions().setWorker(true);
+        deployConsumer(vertx, address, discovery, opts);
+    }
+
+    private static void deployConsumer(Vertx vertx, String address, ServiceDiscovery discovery, DeploymentOptions opts) {
         vertx.deployVerticle(new ConsumerVerticle(address), opts, ar -> {
-            LOG.info("Consumer deployed at address {}.", address);
+            LOG.info("Consumer deployed at address {}, id {}.", address, ar.result());
             Record record = new Record()
                     .setType(MessageSource.TYPE)
                     .setLocation(new JsonObject().put("address", address))
                     .setName("consumer");
             discovery.publish(record, pr -> {
-                if (ar.succeeded()) {
+                if (pr.succeeded()) {
                     // publication succeeded
                     Record publishedRecord = pr.result();
                     LOG.info("Published service {}", publishedRecord.getName());
@@ -75,7 +80,7 @@ public class App {
     private static void deployProducer(Vertx vertx) {
         DeploymentOptions opts = new DeploymentOptions().setWorker(false);
         vertx.deployVerticle(new ProducerVerticle(), opts, ar -> {
-            LOG.info("Producer deployed.");
+            LOG.info("Producer deployed with id {}", ar.result());
         });
     }
 }
