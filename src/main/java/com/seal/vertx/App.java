@@ -1,8 +1,10 @@
 package com.seal.vertx;
 
 import com.seal.vertx.domain.GameState;
+import com.seal.vertx.logic.UserInputManager;
 import com.seal.vertx.message.ActionMessage;
 
+import com.seal.vertx.verticles.GameVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
@@ -40,6 +42,8 @@ public class App {
             response.putHeader("content-type", "text/plain");
             response.end("catchall");
         });
+
+        vertx.deployVerticle(new GameVerticle());
 
         vertx.eventBus().consumer("draw", msg -> {
            LOG.info("Got: {}", msg.body());

@@ -11,14 +11,14 @@ import io.vertx.core.AbstractVerticle;
  * Created by jacobsznajdman on 26/10/17.
  */
 public class GameVerticle extends AbstractVerticle {
-    private UserInputManager userInputManager;
-    private Engine engine;
-    private Gson gson;
+    private final UserInputManager userInputManager;
+    private final Engine engine;
+    private final Gson gson;
 
 
-    public GameVerticle(UserInputManager userInputManager, Engine engine) {
-        this.userInputManager = userInputManager;
-        this.engine = engine;
+    public GameVerticle() {
+        this.userInputManager = new UserInputManager();
+        this.engine = new Engine();
         this.gson = new Gson();
     }
 
