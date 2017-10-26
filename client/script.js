@@ -1,10 +1,14 @@
 $(function () {
 
-    var id = uuidv1();
+
+    var id = window.sessionStorage.getItem("id");
+    if (!id) {
+        id = uuidv1();
+        window.sessionStorage.setItem('id', id);
+    }
 
     var ebUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/eventbus'
     console.log("ubUrl", ebUrl)
-    var eb = new EventBus(ebUrl);
 
     var app = new PIXI.Application(800, 600, {backgroundColor : 0x1099bb});
     document.body.appendChild(app.view);
@@ -34,6 +38,7 @@ $(function () {
                 }
             });
 
+            var eb = new EventBus(ebUrl);
             eb.onopen = function () {
                 join();
                 eb.registerHandler('client', function (err, data) {
