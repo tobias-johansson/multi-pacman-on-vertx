@@ -2,8 +2,6 @@ package com.seal.vertx;
 
 import com.seal.vertx.domain.GameState;
 import com.seal.vertx.message.ActionMessage;
-import com.seal.vertx.message.ActionMessageCodec;
-import com.seal.vertx.message.GameStateCodec;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -21,7 +19,6 @@ public class App {
 
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
-        addCodecs(vertx);
         HttpServer server = vertx.createHttpServer();
 
         Router router = Router.router(vertx);
@@ -50,11 +47,6 @@ public class App {
 
         server.requestHandler(router::accept).listen(8080);
 
-    }
-
-    private static void addCodecs(Vertx vertx) {
-        vertx.eventBus().registerDefaultCodec(ActionMessage.class, new ActionMessageCodec());
-        vertx.eventBus().registerDefaultCodec(GameState.class, new GameStateCodec());
     }
 
 }

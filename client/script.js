@@ -1,6 +1,5 @@
 $(function () {
 
-//    var id = Math.round($.now() * Math.random());
     var id = uuidv1();
 
     var ebUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/eventbus'
@@ -63,7 +62,7 @@ $(function () {
 
             eb.onopen = function () {
                 join();
-                eb.registerHandler('move', function (err, data) {
+                eb.registerHandler('action', function (err, data) {
                     console.log("got", data)
                     switch(data.body.direction) {
                         case 'left':
@@ -83,15 +82,16 @@ $(function () {
             };
 
             function move(direction) {
-                publish('move', {'id': id, 'direction': direction});
+                publish('action', {action: 'move', 'direction': direction});
             }
 
             function join() {
-                publish('join', {'id': id});
+                publish('action', {action: 'join'});
             }
 
             function publish(address, data) {
-                console.log("publish", address, data)
+                data.userId = id;
+                console.log("publish", address, data);
                 eb.publish(address, data);
             }
 
