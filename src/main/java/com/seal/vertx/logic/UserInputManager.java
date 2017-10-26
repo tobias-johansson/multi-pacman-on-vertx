@@ -27,7 +27,7 @@ public class UserInputManager {
         Action action = am.getAction();
         String userId = am.getUserId();
         if (latestUserInput.containsKey(userId) && 
-        		(latestUserInput.get(userId).equals(Action.QUIT) || latestUserInput.get(userId).equals(Action.JOIN))) {
+        		(latestUserInput.get(userId).isFinal())) {
         	//
         } else {
         	latestUserInput.put(userId, action);

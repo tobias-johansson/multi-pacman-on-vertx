@@ -1,19 +1,29 @@
 package com.seal.vertx;
 
 import com.seal.vertx.domain.*;
+import com.seal.vertx.verticles.GameVerticle;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.seal.vertx.domain.Direction.DOWN;
+import static com.seal.vertx.domain.Direction.LEFT;
+import static com.seal.vertx.domain.Direction.RIGHT;
+import static com.seal.vertx.domain.Direction.UP;
 
 /**
  * Created by jacobsznajdman on 26/10/17.
  */
 public class Engine {
     private GameState current;
+    private GameVerticle gameVerticle;
 
-    public Engine() {
+    public Engine(GameVerticle gameVerticle) {
+        this.gameVerticle = gameVerticle;
     }
 
     public void start() {
@@ -33,18 +43,18 @@ public class Engine {
         List<PlayerState> playerStates = transforming.playerStates;
         List<PlayerState> wallCollidedPlayerStates = wallCollidedPlayerStates(transforming);
         List<Integer> ghostIndices = new ArrayList<>();
-        List<Integer> pacmanIndices = new ArrayList<>();
+        List<Integer> alivePacmanIndices = new ArrayList<>();
         List<Integer> deadPacmen = new ArrayList<>();
         for (int i = 0; i < playerStates.size(); i++) {
             if (playerStates.get(i).player.type == PlayerType.GHOST) {
                 ghostIndices.add(i);
             }
-            if (playerStates.get(i).player.type == PlayerType.PACMAN) {
-                pacmanIndices.add(i);
+            if (playerStates.get(i).player.type == PlayerType.PACMAN && playerStates.get(i).status == Status.ALIVE) {
+                alivePacmanIndices.add(i);
             }
         }
         for (int ghost : ghostIndices) {
-            for (int pacman : pacmanIndices) {
+            for (int pacman : alivePacmanIndices) {
                 PlayerState ghost1 = playerStates.get(ghost);
                 PlayerState ghost2 = wallCollidedPlayerStates.get(ghost);
                 PlayerState pacman1 = playerStates.get(pacman);
@@ -65,13 +75,14 @@ public class Engine {
                 } else {
                     PlayerState oldState = wallCollidedPlayerStates.get(i);
                     PlayerState deadPacman = new PlayerState(oldState.player, oldState.location, oldState.direction, Status.DEAD);
+                    gameVerticle.scheduleReviving(oldState.player.id);
                     newPlayerStates.add(deadPacman);
                 }
             } else {
                 throw new RuntimeException("Unimplemented player type");
             }
         }
-        return transforming;
+        return new GameState(newPlayerStates, transforming.maze);
     }
 
     private boolean collides(PlayerState ghost1, PlayerState ghost2, PlayerState pacman1, PlayerState pacman2) {
@@ -82,17 +93,17 @@ public class Engine {
             return true;
         }
         TimeInterval total = new TimeInterval(0,Constants.timeStep);
-        TimeInterval collidingX = collidingInterval(ghost1.location.x, pacman1.location.x, ghost1.direction.getX(),
-                pacman1.direction.getX());
-        TimeInterval collidingY = collidingInterval(ghost1.location.y, pacman1.location.y, ghost1.direction.getY(),
-                pacman1.direction.getY());
+        TimeInterval collidingX = collidingInterval(ghost1.location.x, pacman1.location.x, ghost1.direction.getX(), pacman1.direction.getX());
+        TimeInterval collidingY = collidingInterval(ghost1.location.y, pacman1.location.y, ghost1.direction.getY(), pacman1.direction.getY());
         TimeInterval result = total.intersect(collidingX).intersect(collidingY);
         return result.endTime > result.startTime;
     }
 
-    private TimeInterval collidingInterval(float pos1, float pos2, int d1, int d2) {
-        pos1 + t1*d1
-        return null;
+    private TimeInterval collidingInterval(float pos1, float pos2, float d1, float d2) {
+        float d = d1 - d2;
+        float t1 = (pos2 - (pos1 + Constants.playerWidth)) / d;
+        float t2 = ((pos2 + Constants.playerWidth) - pos1) / d;
+        return new TimeInterval((long)Math.min(t1, t2), (long)Math.max(t1, t2));
     }
 
     private boolean collidesSpatial(float x1, float x2) {
@@ -101,38 +112,68 @@ public class Engine {
 
 
     private List<PlayerState> wallCollidedPlayerStates(GameState transforming) {
-        return null;
+        return transforming.playerStates.stream().map(ps -> {
+            if (ps.status == Status.DEAD) {
+                return ps;
+            }
+            float x = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.x + ps.direction.getX() * Constants.timeStep));
+            float y = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.y + ps.direction.getY() * Constants.timeStep));
+            return new PlayerState(ps.player, new Location(x, y), ps.direction, ps.status);
+        }).collect(Collectors.toList());
     }
 
     private GameState updateState(GameState transforming, String userId, Action action) {
-        List<PlayerState> newPlayers;
-        switch (action) {
-            case UP:
-                return transforming;
-            case DOWN:
-                return transforming;
-            case LEFT:
-                return transforming;
-            case RIGHT:
-                return transforming;
-            case JOIN:
-                boolean playerExists = current.playerStates.stream().anyMatch(ps -> ps.player.id.equals(userId));
-                if (playerExists) {
+        List<PlayerState> newPlayers = new ArrayList<>();
+        Optional<PlayerState> player = current.playerStates.stream().filter(ps -> ps.player.id.equals(userId)).findFirst();
+        if (player.isPresent()) {
+            switch (action) {
+                case UP:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, UP)).collect(Collectors.toList()), transforming.maze);
+                case DOWN:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, DOWN)).collect(Collectors.toList()), transforming.maze);
+                case LEFT:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, LEFT)).collect(Collectors.toList()), transforming.maze);
+                case RIGHT:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, RIGHT)).collect(Collectors.toList()), transforming.maze);
+                case QUIT:
+                    return new GameState(transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId)).collect(Collectors.toList()), transforming.maze);
+                case REVIVE:
+                    return new GameState(transforming.playerStates.stream().map(revive(userId, transforming)).collect(Collectors.toList()), transforming.maze);
+                default:
                     return transforming;
-                }
-                newPlayers = new ArrayList<>();
-                Player newPlayer = Player.randomPlayer(transforming, userId);
-                PlayerState newState = PlayerState.randomState(transforming, newPlayer);
-                newPlayers.add(newState);
-                newPlayers.addAll(transforming.playerStates);
-                return new GameState(newPlayers, transforming.maze);
-            case QUIT:
-                newPlayers = transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId))
-                        .collect(Collectors.toList());
-                return new GameState(newPlayers, transforming.maze);
-            default:
-                throw new RuntimeException("Unimplemented action");
+            }
+        } else {
+            switch (action) {
+                case JOIN:
+                    Player newPlayer = Player.randomPlayer(transforming, userId);
+                    PlayerState newState = PlayerState.randomState(transforming, newPlayer);
+                    newPlayers.add(newState);
+                    newPlayers.addAll(transforming.playerStates);
+                    return new GameState(newPlayers, transforming.maze);
+                default:
+                    return transforming;
+            }
         }
+    }
+
+    Function<PlayerState, PlayerState> revive(String id, GameState gameState) {
+        return ps -> {
+            if (ps.player.id.equals(id)) {
+                return ps;
+            } else {
+                return PlayerState.randomState(gameState, ps.player);
+            }
+        };
+    }
+
+    Function<PlayerState, PlayerState> turn(String id, Direction dir) {
+        return ps -> {
+            if (ps.player.id.equals(id) && ps.status == Status.ALIVE) {
+                return new PlayerState(ps.player, ps.location, dir, ps.status);
+            } else {
+                return ps;
+            }
+        };
     }
 
 }

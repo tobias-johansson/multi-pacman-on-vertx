@@ -1,92 +1,94 @@
 $(function () {
 
-    var id = uuidv1();
+
+    var id = window.sessionStorage.getItem("id");
+    if (!id) {
+        id = uuidv1();
+        window.sessionStorage.setItem('id', id);
+    }
 
     var ebUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/eventbus'
     console.log("ubUrl", ebUrl)
-    var eb = new EventBus(ebUrl);
 
     var app = new PIXI.Application(800, 600, {backgroundColor : 0x1099bb});
     document.body.appendChild(app.view);
 
-    var walls = [
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ]
+    sprites = {};
 
     PIXI.loader
-        .add("wall", "images/wall.png")
-        .add("pacman", "images/pacman.png")
+        .add("wall",   "images/wall.png")
+        .add("pacman", "images/pacman2.png")
+        .add("ghost1", "images/ghost1.png")
         .load(function() {
-
-            for (i = 0; i < walls.length; i++) {
-                for (j = 0; j < walls[i].length; j++) {
-                    if (walls[i][j] === 1) {
-                        var wall = new PIXI.Sprite(PIXI.loader.resources.wall.texture);
-                        wall.x = i * 32;
-                        wall.y = j * 32;
-                        app.stage.addChild(wall);
-                    }
-                }
-            }
-
-            var pac = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
-            pac.x = app.renderer.width / 2;
-            pac.y = app.renderer.height / 2;
-            app.stage.addChild(pac);
 
             document.addEventListener('keydown', function(key) {
                 switch(key.keyCode) {
                     case 37:
-                        move('left');
+                        move('LEFT');
                         break;
                     case 38:
-                        move('up');
+                        move('UP');
                         break;
                     case 39:
-                        move('right');
+                        move('RIGHT');
                         break;
                     case 40:
-                        move('down');
+                        move('DOWN');
                         break;
                 }
             });
 
+            var eb = new EventBus(ebUrl);
             eb.onopen = function () {
                 join();
-                eb.registerHandler('action', function (err, data) {
-                    console.log("got", data)
-                    switch(data.body.direction) {
-                        case 'left':
-                            pac.x -= 10; pac.y +=  0;
-                            break;
-                        case 'up':
-                            pac.x +=  0; pac.y -= 10;
-                            break;
-                        case 'right':
-                            pac.x += 10; pac.y +=  0;
-                            break;
-                        case 'down':
-                            pac.x +=  0; pac.y += 10;
-                            break;
+                eb.registerHandler('client', function (err, data) {
+                    var state = JSON.parse(data.body);
+                    console.log("state", state);
+                    state.playerStates.forEach(function(ps) {
+                        var sprite = sprites[ps.player.id];
+                        if (!sprite) {
+                            if (ps.player.type === 'GHOST') {
+                                sprite = new PIXI.Sprite(PIXI.loader.resources.ghost1.texture);
+                            } else {
+                                sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
+                            }
+                            app.stage.addChild(sprite);
                         }
+                        sprite.anchor.set(0.5);
+                        sprite.x = ps.location.x * app.renderer.width  + 32/2;
+                        sprite.y = ps.location.y * app.renderer.height + 32/2;
+                        switch(ps.direction) {
+                            case 'UP':
+                                if (ps.player.type === 'GHOST') break;
+                                sprite.rotation = Math.PI * -0.5;
+                                sprite.scale.x = 1;
+                                break;
+                            case 'DOWN':
+                                if (ps.player.type === 'GHOST') break;
+                                sprite.rotation = Math.PI * 0.5;
+                                sprite.scale.x = 1;
+                                break;
+                            case 'RIGHT':
+                                if (ps.player.type === 'GHOST') break;
+                                sprite.rotation = 0;
+                                sprite.scale.x = 1;
+                                break;
+                            case 'LEFT':
+                                sprite.rotation = 0;
+                                sprite.scale.x = -1;
+                                break;
+                        }
+                        sprites[ps.player.id] = sprite;
+                    });
                 });
             };
 
             function move(direction) {
-                publish('action', {action: 'move', 'direction': direction});
+                publish('action', {action: direction});
             }
 
             function join() {
-                publish('action', {action: 'join'});
+                publish('action', {action: 'JOIN'});
             }
 
             function publish(address, data) {
@@ -94,7 +96,5 @@ $(function () {
                 console.log("publish", address, data);
                 eb.publish(address, data);
             }
-
-
         });
 });
