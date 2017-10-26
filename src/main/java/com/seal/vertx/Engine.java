@@ -168,7 +168,7 @@ public class Engine {
 
     Function<PlayerState, PlayerState> turn(String id, Direction dir) {
         return ps -> {
-            if (ps.player.id.equals(id)) {
+            if (ps.player.id.equals(id) && ps.status == Status.ALIVE) {
                 return new PlayerState(ps.player, ps.location, dir, ps.status);
             } else {
                 return ps;
