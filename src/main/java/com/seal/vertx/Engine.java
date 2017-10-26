@@ -1,6 +1,7 @@
 package com.seal.vertx;
 
 import com.seal.vertx.domain.*;
+import com.seal.vertx.verticles.GameVerticle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +20,10 @@ import static com.seal.vertx.domain.Direction.UP;
  */
 public class Engine {
     private GameState current;
+    private GameVerticle gameVerticle;
 
-    public Engine() {
+    public Engine(GameVerticle gameVerticle) {
+        this.gameVerticle = gameVerticle;
     }
 
     public void start() {
@@ -72,6 +75,7 @@ public class Engine {
                 } else {
                     PlayerState oldState = wallCollidedPlayerStates.get(i);
                     PlayerState deadPacman = new PlayerState(oldState.player, oldState.location, oldState.direction, Status.DEAD);
+                    gameVerticle.scheduleReviving(oldState.player.id);
                     newPlayerStates.add(deadPacman);
                 }
             } else {
@@ -130,6 +134,8 @@ public class Engine {
                     return new GameState(transforming.playerStates.stream().map(turn(userId, RIGHT)).collect(Collectors.toList()), transforming.maze);
                 case QUIT:
                     return new GameState(transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId)).collect(Collectors.toList()), transforming.maze);
+                case REVIVE:
+                    return new GameState(transforming.playerStates.stream().map(revive(userId, transforming)).collect(Collectors.toList()), transforming.maze);
                 default:
                     return transforming;
             }
@@ -145,6 +151,16 @@ public class Engine {
                     return transforming;
             }
         }
+    }
+
+    Function<PlayerState, PlayerState> revive(String id, GameState gameState) {
+        return ps -> {
+            if (ps.player.id.equals(id)) {
+                return ps;
+            } else {
+                return PlayerState.randomState(gameState, ps.player);
+            }
+        };
     }
 
     Function<PlayerState, PlayerState> turn(String id, Direction dir) {

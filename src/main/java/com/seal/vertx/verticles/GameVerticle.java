@@ -3,8 +3,10 @@ package com.seal.vertx.verticles;
 import com.google.gson.Gson;
 import com.seal.vertx.Constants;
 import com.seal.vertx.Engine;
+import com.seal.vertx.domain.Action;
 import com.seal.vertx.domain.GameState;
 import com.seal.vertx.logic.UserInputManager;
+import com.seal.vertx.message.ActionMessage;
 import io.vertx.core.AbstractVerticle;
 
 
@@ -19,7 +21,7 @@ public class GameVerticle extends AbstractVerticle {
 
     public GameVerticle() {
         this.userInputManager = new UserInputManager();
-        this.engine = new Engine();
+        this.engine = new Engine(this);
         this.gson = new Gson();
     }
 
@@ -35,6 +37,14 @@ public class GameVerticle extends AbstractVerticle {
 
         vertx.eventBus().consumer("action", m -> {
             userInputManager.handle(m.body());
+        });
+    }
+
+    public void scheduleReviving(String id) {
+        vertx.setTimer(Constants.deadTime, l -> {
+            ActionMessage am = new ActionMessage(Action.REVIVE, id);
+            String json = gson.toJson(am, ActionMessage.class);
+            vertx.eventBus().send("action", json);
         });
     }
 }
