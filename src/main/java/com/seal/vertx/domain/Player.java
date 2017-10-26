@@ -11,4 +11,9 @@ public class Player {
         this.id = id;
         this.type = type;
     }
+
+    public static Player randomPlayer(GameState transforming, String userId) {
+        PlayerType newPlayerType = System.currentTimeMillis() % 2 == 0 ? PlayerType.GHOST : PlayerType.PACMAN;
+        return new Player(userId, newPlayerType);
+    }
 }

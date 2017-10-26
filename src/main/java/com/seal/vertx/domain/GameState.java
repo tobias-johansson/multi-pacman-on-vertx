@@ -8,13 +8,15 @@ import java.util.List;
  * Created by jacobsznajdman on 26/10/17.
  */
 public class GameState {
-    private final List<PlayerState> playerStates;
+    public final List<PlayerState> playerStates;
+    public final Maze maze;
 
-    public GameState(List<PlayerState> playerStates) {
+    public GameState(List<PlayerState> playerStates, Maze maze) {
         this.playerStates = playerStates;
+        this.maze = maze;
     }
 
     public static GameState initial() {
-        return new GameState(new ArrayList<>());
+        return new GameState(new ArrayList<>(), new Maze());
     }
 }
