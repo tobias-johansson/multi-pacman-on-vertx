@@ -43,18 +43,18 @@ public class Engine {
         List<PlayerState> playerStates = transforming.playerStates;
         List<PlayerState> wallCollidedPlayerStates = wallCollidedPlayerStates(transforming);
         List<Integer> ghostIndices = new ArrayList<>();
-        List<Integer> pacmanIndices = new ArrayList<>();
+        List<Integer> alivePacmanIndices = new ArrayList<>();
         List<Integer> deadPacmen = new ArrayList<>();
         for (int i = 0; i < playerStates.size(); i++) {
             if (playerStates.get(i).player.type == PlayerType.GHOST) {
                 ghostIndices.add(i);
             }
-            if (playerStates.get(i).player.type == PlayerType.PACMAN) {
-                pacmanIndices.add(i);
+            if (playerStates.get(i).player.type == PlayerType.PACMAN && playerStates.get(i).status == Status.ALIVE) {
+                alivePacmanIndices.add(i);
             }
         }
         for (int ghost : ghostIndices) {
-            for (int pacman : pacmanIndices) {
+            for (int pacman : alivePacmanIndices) {
                 PlayerState ghost1 = playerStates.get(ghost);
                 PlayerState ghost2 = wallCollidedPlayerStates.get(ghost);
                 PlayerState pacman1 = playerStates.get(pacman);
