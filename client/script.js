@@ -22,8 +22,10 @@ $(function () {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     ]
 
+    sprites = {};
+
     PIXI.loader
-        .add("wall", "images/wall.png")
+        .add("wall",   "images/wall.png")
         .add("pacman", "images/pacman.png")
         .load(function() {
 
@@ -38,55 +40,47 @@ $(function () {
                 }
             }
 
-            var pac = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
-            pac.x = app.renderer.width / 2;
-            pac.y = app.renderer.height / 2;
-            app.stage.addChild(pac);
-
             document.addEventListener('keydown', function(key) {
                 switch(key.keyCode) {
                     case 37:
-                        move('left');
+                        move('LEFT');
                         break;
                     case 38:
-                        move('up');
+                        move('UP');
                         break;
                     case 39:
-                        move('right');
+                        move('RIGHT');
                         break;
                     case 40:
-                        move('down');
+                        move('DOWN');
                         break;
                 }
             });
 
             eb.onopen = function () {
                 join();
-                eb.registerHandler('action', function (err, data) {
-                    console.log("got", data)
-                    switch(data.body.direction) {
-                        case 'left':
-                            pac.x -= 10; pac.y +=  0;
-                            break;
-                        case 'up':
-                            pac.x +=  0; pac.y -= 10;
-                            break;
-                        case 'right':
-                            pac.x += 10; pac.y +=  0;
-                            break;
-                        case 'down':
-                            pac.x +=  0; pac.y += 10;
-                            break;
+                eb.registerHandler('client', function (err, data) {
+                    var state = JSON.parse(data.body);
+                    console.log("state", state);
+                    state.playerStates.forEach(function(ps) {
+                        var sprite = sprites[ps.player.id];
+                        if (!sprite) {
+                            sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
+                            app.stage.addChild(sprite);
                         }
+                        sprite.x = ps.location.x * app.renderer.width;
+                        sprite.y = ps.location.y * app.renderer.height;
+                        sprites[ps.player.id] = sprite;
+                    });
                 });
             };
 
             function move(direction) {
-                publish('action', {action: 'move', 'direction': direction});
+                publish('action', {action: direction});
             }
 
             function join() {
-                publish('action', {action: 'join'});
+                publish('action', {action: 'JOIN'});
             }
 
             function publish(address, data) {
@@ -94,7 +88,5 @@ $(function () {
                 console.log("publish", address, data);
                 eb.publish(address, data);
             }
-
-
         });
 });

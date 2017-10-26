@@ -1,13 +1,16 @@
 package com.seal.vertx;
 
 import com.seal.vertx.domain.Action;
+import com.seal.vertx.domain.Direction;
 import com.seal.vertx.domain.GameState;
+import com.seal.vertx.domain.Location;
 import com.seal.vertx.domain.Player;
 import com.seal.vertx.domain.PlayerState;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,10 +40,18 @@ public class Engine {
     }
 
     private GameState updateState(GameState transforming, String userId, Action action) {
-        List<PlayerState> newPlayers;
+        List<PlayerState> newPlayers = new ArrayList<>();
+        Optional<PlayerState> player = current.playerStates.stream().filter(ps -> ps.player.id.equals(userId)).findFirst();
         switch (action) {
             case UP:
-                return transforming;
+                if (!player.isPresent()) {
+                    return transforming;
+                } else {
+                    transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId)).forEach(newPlayers::add);
+                    PlayerState p = player.get();
+                    newPlayers.add(new PlayerState(p.player, p.location, Direction.UP));
+                    return new GameState(newPlayers, transforming.maze);
+                }
             case DOWN:
                 return transforming;
             case LEFT:
@@ -48,16 +59,15 @@ public class Engine {
             case RIGHT:
                 return transforming;
             case JOIN:
-                boolean playerExists = current.playerStates.stream().anyMatch(ps -> ps.player.id.equals(userId));
-                if (playerExists) {
+                if (player.isPresent()) {
                     return transforming;
+                } else {
+                    Player newPlayer = Player.randomPlayer(transforming, userId);
+                    PlayerState newState = PlayerState.randomState(transforming, newPlayer);
+                    newPlayers.add(newState);
+                    newPlayers.addAll(transforming.playerStates);
+                    return new GameState(newPlayers, transforming.maze);
                 }
-                newPlayers = new ArrayList<>();
-                Player newPlayer = Player.randomPlayer(transforming, userId);
-                PlayerState newState = PlayerState.randomState(transforming, newPlayer);
-                newPlayers.add(newState);
-                newPlayers.addAll(transforming.playerStates);
-                return new GameState(newPlayers, transforming.maze);
             case QUIT:
                 newPlayers = transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId))
                         .collect(Collectors.toList());

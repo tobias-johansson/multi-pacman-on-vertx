@@ -25,7 +25,7 @@ public class GameVerticle extends AbstractVerticle {
     public void start() {
         engine.start();
 
-        vertx.setPeriodic(10, l -> {
+        vertx.setPeriodic(1000, l -> {
             GameState update = engine.update(userInputManager.getLatestUserInput());
             userInputManager.reset();
             String json = gson.toJson(update, GameState.class);
