@@ -2,6 +2,8 @@ package com.seal.vertx.message;
 
 import com.seal.vertx.domain.Action;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Created by jacobsznajdman on 26/10/17.
  */
@@ -14,7 +16,7 @@ public class ActionMessage {
         this.userId = userId;
     }
 
-    public Action getAction() {
+	public Action getAction() {
         return action;
     }
 
