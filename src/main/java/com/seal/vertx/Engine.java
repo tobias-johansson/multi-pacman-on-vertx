@@ -6,7 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.seal.vertx.domain.Direction.DOWN;
+import static com.seal.vertx.domain.Direction.LEFT;
+import static com.seal.vertx.domain.Direction.RIGHT;
+import static com.seal.vertx.domain.Direction.UP;
 
 /**
  * Created by jacobsznajdman on 26/10/17.
@@ -72,7 +78,7 @@ public class Engine {
                 throw new RuntimeException("Unimplemented player type");
             }
         }
-        return transforming;
+        return new GameState(newPlayerStates, transforming.maze);
     }
 
     private boolean collides(PlayerState ghost1, PlayerState ghost2, PlayerState pacman1, PlayerState pacman2) {
@@ -83,17 +89,17 @@ public class Engine {
             return true;
         }
         TimeInterval total = new TimeInterval(0,Constants.timeStep);
-        TimeInterval collidingX = collidingInterval(ghost1.location.x, pacman1.location.x, ghost1.direction.getX(),
-                pacman1.direction.getX());
-        TimeInterval collidingY = collidingInterval(ghost1.location.y, pacman1.location.y, ghost1.direction.getY(),
-                pacman1.direction.getY());
+        TimeInterval collidingX = collidingInterval(ghost1.location.x, pacman1.location.x, ghost1.direction.getX(), pacman1.direction.getX());
+        TimeInterval collidingY = collidingInterval(ghost1.location.y, pacman1.location.y, ghost1.direction.getY(), pacman1.direction.getY());
         TimeInterval result = total.intersect(collidingX).intersect(collidingY);
         return result.endTime > result.startTime;
     }
 
-    private TimeInterval collidingInterval(float pos1, float pos2, int d1, int d2) {
-//        pos1 + t1*d1
-        return null;
+    private TimeInterval collidingInterval(float pos1, float pos2, float d1, float d2) {
+        float d = d1 - d2;
+        float t1 = (pos2 - (pos1 + Constants.playerWidth)) / d;
+        float t2 = ((pos2 + Constants.playerWidth) - pos1) / d;
+        return new TimeInterval((long)Math.min(t1, t2), (long)Math.max(t1, t2));
     }
 
     private boolean collidesSpatial(float x1, float x2) {
@@ -102,45 +108,53 @@ public class Engine {
 
 
     private List<PlayerState> wallCollidedPlayerStates(GameState transforming) {
-        return null;
+        return transforming.playerStates.stream().map(ps -> {
+            float x = Math.min(1.0f, Math.max(0.0f, ps.location.x + ps.direction.getX() * Constants.timeStep));
+            float y = Math.min(1.0f, Math.max(0.0f, ps.location.y + ps.direction.getY() * Constants.timeStep));
+            return new PlayerState(ps.player, new Location(x, y), ps.direction, ps.status);
+        }).collect(Collectors.toList());
     }
 
     private GameState updateState(GameState transforming, String userId, Action action) {
         List<PlayerState> newPlayers = new ArrayList<>();
         Optional<PlayerState> player = current.playerStates.stream().filter(ps -> ps.player.id.equals(userId)).findFirst();
-        switch (action) {
-            case UP:
-                if (!player.isPresent()) {
+        if (player.isPresent()) {
+            switch (action) {
+                case UP:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, UP)).collect(Collectors.toList()), transforming.maze);
+                case DOWN:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, DOWN)).collect(Collectors.toList()), transforming.maze);
+                case LEFT:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, LEFT)).collect(Collectors.toList()), transforming.maze);
+                case RIGHT:
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, RIGHT)).collect(Collectors.toList()), transforming.maze);
+                case QUIT:
+                    return new GameState(transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId)).collect(Collectors.toList()), transforming.maze);
+                default:
                     return transforming;
-                } else {
-                    transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId)).forEach(newPlayers::add);
-                    PlayerState p = player.get();
-                    newPlayers.add(new PlayerState(p.player, p.location, Direction.UP, p.status));
-                    return new GameState(newPlayers, transforming.maze);
-                }
-            case DOWN:
-                return transforming;
-            case LEFT:
-                return transforming;
-            case RIGHT:
-                return transforming;
-            case JOIN:
-                if (player.isPresent()) {
-                    return transforming;
-                } else {
+            }
+        } else {
+            switch (action) {
+                case JOIN:
                     Player newPlayer = Player.randomPlayer(transforming, userId);
                     PlayerState newState = PlayerState.randomState(transforming, newPlayer);
                     newPlayers.add(newState);
                     newPlayers.addAll(transforming.playerStates);
                     return new GameState(newPlayers, transforming.maze);
-                }
-            case QUIT:
-                newPlayers = transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId))
-                        .collect(Collectors.toList());
-                return new GameState(newPlayers, transforming.maze);
-            default:
-                throw new RuntimeException("Unimplemented action");
+                default:
+                    return transforming;
+            }
         }
+    }
+
+    Function<PlayerState, PlayerState> turn(String id, Direction dir) {
+        return ps -> {
+            if (ps.player.id.equals(id)) {
+                return new PlayerState(ps.player, ps.location, dir, ps.status);
+            } else {
+                return ps;
+            }
+        };
     }
 
 }

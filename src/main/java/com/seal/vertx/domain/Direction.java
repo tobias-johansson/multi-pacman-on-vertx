@@ -1,32 +1,34 @@
 package com.seal.vertx.domain;
 
+import static com.seal.vertx.Constants.speed;
+
 /**
  * Created by jacobsznajdman on 26/10/17.
  */
 public enum Direction {
     UP, DOWN, LEFT, RIGHT;
 
-    public int getX() {
+    public float getX() {
         switch (this) {
             case UP:
                 return 0;
             case DOWN:
                 return 0;
             case RIGHT:
-                return 1;
+                return speed;
             case LEFT:
-                return -1;
+                return -speed;
             default:
                 throw new RuntimeException("Unimplemented direction");
         }
     }
 
-    public int getY() {
+    public float getY() {
         switch (this) {
             case UP:
-                return -1;
+                return -speed;
             case DOWN:
-                return 1;
+                return speed;
             case RIGHT:
                 return 0;
             case LEFT:

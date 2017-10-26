@@ -26,7 +26,7 @@ $(function () {
 
     PIXI.loader
         .add("wall",   "images/wall.png")
-        .add("pacman", "images/pacman.png")
+        .add("pacman", "images/pacman2.png")
         .load(function() {
 
             for (i = 0; i < walls.length; i++) {
