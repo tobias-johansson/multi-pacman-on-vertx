@@ -1,6 +1,7 @@
 package com.seal.vertx.verticles;
 
 import com.google.gson.Gson;
+import com.seal.vertx.Constants;
 import com.seal.vertx.Engine;
 import com.seal.vertx.domain.GameState;
 import com.seal.vertx.logic.UserInputManager;
@@ -25,7 +26,7 @@ public class GameVerticle extends AbstractVerticle {
     public void start() {
         engine.start();
 
-        vertx.setPeriodic(10, l -> {
+        vertx.setPeriodic(Constants.timeStep,l -> {
             GameState update = engine.update(userInputManager.getLatestUserInput());
             userInputManager.reset();
             String json = gson.toJson(update, GameState.class);
