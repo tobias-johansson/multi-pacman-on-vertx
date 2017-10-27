@@ -20,8 +20,10 @@ $(function () {
 
     PIXI.loader
         .add("wall",   "images/wall.png")
-        .add("pacman", "images/pacman2.png")
-        .add("ghost1", "images/ghost1.png")
+        .add("pacman", "images/pacman.png")
+        .add("pacmanyou", "images/pacman-you.png")
+        .add("ghost", "images/ghost.png")
+        .add("ghostyou", "images/ghost-you.png")
         .load(function() {
             $.getJSON( "maze.json", function( data ) {
                 var blocks = data.wallBlocks
@@ -56,14 +58,22 @@ $(function () {
                 join();
                 eb.registerHandler('client', function (err, data) {
                     var state = JSON.parse(data.body);
-                    //console.log("state", state);
+                    // console.log("state", state);
                     state.playerStates.forEach(function(ps) {
                         var sprite = sprites[ps.player.id];
                         if (!sprite) {
                             if (ps.player.type === 'GHOST') {
-                                sprite = new PIXI.Sprite(PIXI.loader.resources.ghost1.texture);
+                                if (ps.player.id == id) {
+                                    sprite = new PIXI.Sprite(PIXI.loader.resources.ghostyou.texture);
+                                } else {
+                                    sprite = new PIXI.Sprite(PIXI.loader.resources.ghost.texture);
+                                }
                             } else {
-                                sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
+                                if (ps.player.id == id) {
+                                    sprite = new PIXI.Sprite(PIXI.loader.resources.pacmanyou.texture);
+                                } else {
+                                    sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
+                                }
                             }
                             app.stage.addChild(sprite);
                         }
