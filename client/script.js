@@ -20,7 +20,18 @@ $(function () {
         .add("pacman", "images/pacman2.png")
         .add("ghost1", "images/ghost1.png")
         .load(function() {
-
+            $.getJSON( "maze2.json", function( data ) {
+                var blocks = data.wallBlocks
+                blocks.forEach ( function (block) {
+                    var sprite = new PIXI.Sprite(PIXI.loader.resources.wall.texture);
+                    sprite.x = block.x * app.renderer.width;
+                    sprite.y = block.y * app.renderer.height;
+                    // sprite.anchor.set(0.5);
+                    sprite.scale.x = app.renderer.width / 18 / 32;
+                    sprite.scale.y = app.renderer.height / 13 / 32;
+                    app.stage.addChild(sprite);
+                });
+            });
             document.addEventListener('keydown', function(key) {
                 switch(key.keyCode) {
                     case 37:
@@ -43,7 +54,7 @@ $(function () {
                 join();
                 eb.registerHandler('client', function (err, data) {
                     var state = JSON.parse(data.body);
-                    console.log("state", state);
+                    //console.log("state", state);
                     state.playerStates.forEach(function(ps) {
                         var sprite = sprites[ps.player.id];
                         if (!sprite) {
