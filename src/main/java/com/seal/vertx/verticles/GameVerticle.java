@@ -31,8 +31,8 @@ public class GameVerticle extends AbstractVerticle {
     public void start() {
         engine.start();
 
-        vertx.setPeriodic(Constants.timeStep,l -> {
-            GameState update = engine.update(userInputManager.getLatestUserInput());
+        vertx.setPeriodic(Constants.timeStep, l -> {
+            GameState update = engine.update(userInputManager.getLatestUserInput(), userInputManager.getActiveUsers());
             userInputManager.reset();
             String json = gson.toJson(update, GameState.class);
             vertx.eventBus().publish("client", json);
@@ -40,6 +40,10 @@ public class GameVerticle extends AbstractVerticle {
 
         vertx.eventBus().consumer("action", m -> {
             userInputManager.handle(m.body());
+        });
+
+        vertx.eventBus().consumer("heartbeat", m -> {
+            userInputManager.heartbeat(m.body());
         });
     }
 

@@ -55,12 +55,17 @@ $(function () {
             });
 
             var eb = new EventBus(ebUrl);
-            eb.onopen = function () {
+            eb.onopen = function(){
                 join();
+                setInterval(function(){
+                    heartbeat();
+                }, 1000);
                 eb.registerHandler('client', function (err, data) {
                     var state = JSON.parse(data.body);
-                    console.log("state", state);
+                    // console.log("state", state);
+                    var active = [];
                     state.playerStates.forEach(function(ps) {
+                        active.push(ps.player.id);
                         var sprite = sprites[ps.player.id];
                         var tx;
                         if (ps.player.type === 'GHOST') {
@@ -106,6 +111,12 @@ $(function () {
                         }
                         sprites[ps.player.id] = sprite;
                     });
+                    console.log("active", active);
+                    for (var key in sprites) {
+                        if (!active.includes(key)) {
+                            sprites[key].visible = false;
+                        }
+                    }
                 });
             };
 
@@ -115,6 +126,10 @@ $(function () {
 
             function join() {
                 publish('action', {action: 'JOIN'});
+            }
+
+            function heartbeat() {
+                publish('heartbeat', {});
             }
 
             function publish(address, data) {
