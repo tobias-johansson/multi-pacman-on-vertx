@@ -57,11 +57,10 @@ public class Maze {
 
     public List<Location> getSpawningLocations() {
         List<Location> locations = new ArrayList<>();
-        locations.add( new Location(0.0f,0.0f));
-        locations.add( new Location(0.2f,0.2f));
-        locations.add( new Location(0.4f,0.4f));
-        locations.add( new Location(0.6f,0.6f));
-        locations.add( new Location(0.8f,0.8f));
+        locations.add( new Location(Constants.playerWidth*1f, Constants.playerWidth*1f));
+		locations.add( new Location(Constants.playerWidth*1f, Constants.playerWidth*11f));
+		locations.add( new Location(Constants.playerWidth*16f, Constants.playerWidth*1f));
+		locations.add( new Location(Constants.playerWidth*16f, Constants.playerWidth*11f));
         return locations;
     }
     // 18 cols 13 rows

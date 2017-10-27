@@ -10,27 +10,30 @@ $(function () {
     var ebUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/eventbus'
     console.log("ubUrl", ebUrl)
 
-    var app = new PIXI.Application(800, 600, {backgroundColor : 0x1099bb});
+    var tileSize = 40;
+    var tileScale = tileSize/32;
+    var app = new PIXI.Application(18*tileSize, 13*tileSize, {backgroundColor : 0x1099bb});
+
     document.body.appendChild(app.view);
 
     sprites = {};
 
     PIXI.loader
         .add("wall",   "images/wall.png")
-        .add("pacman", "images/pacman2.png")
-        .add("ghost1", "images/ghost1.png")
+        .add("pacman", "images/pacman.png")
+        .add("pacmanyou", "images/pacman-you.png")
+        .add("ghost", "images/ghost.png")
+        .add("ghostyou", "images/ghost-you.png")
+        .add("rip", "images/rip.png")
         .load(function() {
-            var scaleX = app.renderer.width / 18 / 32;
-            var scaleY = app.renderer.height / 13 / 32
-            $.getJSON( "maze2.json", function( data ) {
+            $.getJSON( "maze.json", function( data ) {
                 var blocks = data.wallBlocks
                 blocks.forEach ( function (block) {
                     var sprite = new PIXI.Sprite(PIXI.loader.resources.wall.texture);
-                    sprite.x = block.x * app.renderer.width;
-                    sprite.y = block.y * app.renderer.height;
-                    // sprite.anchor.set(0.5);
-                    sprite.scale.x = scaleX;
-                    sprite.scale.y = scaleY;
+                    sprite.x = block.x * 18 * tileSize;
+                    sprite.y = block.y * 18 * tileSize;
+                    sprite.scale.x = tileScale;
+                    sprite.scale.y = tileScale;
                     app.stage.addChild(sprite);
                 });
             });
@@ -52,49 +55,68 @@ $(function () {
             });
 
             var eb = new EventBus(ebUrl);
-            eb.onopen = function () {
+            eb.onopen = function(){
                 join();
+                setInterval(function(){
+                    heartbeat();
+                }, 1000);
                 eb.registerHandler('client', function (err, data) {
                     var state = JSON.parse(data.body);
-                    //console.log("state", state);
+                    // console.log("state", state);
+                    var active = [];
                     state.playerStates.forEach(function(ps) {
+                        active.push(ps.player.id);
                         var sprite = sprites[ps.player.id];
-                        if (!sprite) {
-                            if (ps.player.type === 'GHOST') {
-                                sprite = new PIXI.Sprite(PIXI.loader.resources.ghost1.texture);
-                            } else {
-                                sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
-                            }
-                            app.stage.addChild(sprite);
+                        var tx;
+                        if (ps.player.type === 'GHOST') {
+                            if (ps.player.id == id)      tx = PIXI.loader.resources.ghostyou.texture;
+                            else                         tx = PIXI.loader.resources.ghost.texture;
+                        } else {
+                            if (ps.status === 'DEAD')    tx = PIXI.loader.resources.rip.texture;
+                            else if (ps.player.id == id) tx = PIXI.loader.resources.pacmanyou.texture;
+                            else                         tx = PIXI.loader.resources.pacman.texture;
                         }
+                        if (!sprite) {
+                            sprite = new PIXI.Sprite(tx);
+                            app.stage.addChild(sprite);
+                        } else {
+                            sprite.setTexture(tx);
+                        }
+
                         sprite.anchor.set(0.5);
-                        sprite.x = ps.location.x * app.renderer.width  + 32*scaleX/2;
-                        sprite.y = ps.location.y * app.renderer.height + 32*scaleY/2;
-                        sprite.scale.x = scaleX;
-                        sprite.scale.y = scaleY;
+                        sprite.x = ps.location.x * 18 * tileSize + tileSize/2;
+                        sprite.y = ps.location.y * 18 * tileSize + tileSize/2;
+                        sprite.scale.x = tileScale;
+                        sprite.scale.y = tileScale;
                         switch(ps.direction) {
                             case 'UP':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = Math.PI * -0.5;
-                                sprite.scale.x = scaleX;
+                                sprite.scale.x = tileScale;
                                 break;
                             case 'DOWN':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = Math.PI * 0.5;
-                                sprite.scale.x = scaleX;
+                                sprite.scale.x = tileScale;
                                 break;
                             case 'RIGHT':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = 0;
-                                sprite.scale.x = scaleX;
+                                sprite.scale.x = tileScale;
                                 break;
                             case 'LEFT':
                                 sprite.rotation = 0;
-                                sprite.scale.x = -scaleX;
+                                sprite.scale.x = -tileScale;
                                 break;
                         }
                         sprites[ps.player.id] = sprite;
                     });
+                    console.log("active", active);
+                    for (var key in sprites) {
+                        if (!active.includes(key)) {
+                            sprites[key].visible = false;
+                        }
+                    }
                 });
             };
 
@@ -104,6 +126,10 @@ $(function () {
 
             function join() {
                 publish('action', {action: 'JOIN'});
+            }
+
+            function heartbeat() {
+                publish('heartbeat', {});
             }
 
             function publish(address, data) {

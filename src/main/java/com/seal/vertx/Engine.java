@@ -33,13 +33,22 @@ public class Engine {
         this.current = GameState.initial();
     }
 
-    public GameState update(Map<String, Action> actions) {
+    public GameState update(Map<String, Action> actions, List<String> activeUsers) {
         GameState transforming = current;
+        transforming = dropInactiveUsers(transforming, activeUsers);
         for (String userId : actions.keySet()) {
             transforming = updateState(transforming, userId, actions.get(userId));
         }
         current = updateMechanics(transforming);
         return current;
+    }
+
+    private GameState dropInactiveUsers(GameState transforming, List<String> activeUsers) {
+        return new GameState(
+                transforming.playerStates.stream()
+                        .filter(ps -> activeUsers.contains(ps.player.id))
+                        .collect(Collectors.toList())
+        );
     }
 
     private GameState updateMechanics(GameState transforming) {
