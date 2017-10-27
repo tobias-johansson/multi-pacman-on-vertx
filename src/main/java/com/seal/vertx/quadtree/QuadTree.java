@@ -45,14 +45,18 @@ public class QuadTree {
      * @param {Object} value The value associated with the point.
      */
     public void set(double x, double y, Object value) {
-
-        Node root = this.root_;
-        if (x < root.getX() || y < root.getY() || x > root.getX() + root.getW() || y > root.getY() + root.getH()) {
-            throw new QuadTreeException("Out of bounds : (" + x + ", " + y + ")");
-        }
-        if (this.insert(root, new Point(x, y, value))) {
-            this.count_++;
-        }
+try {
+    Node root = this.root_;
+    if (x < root.getX() || y < root.getY() || x > root.getX() + root.getW() || y > root.getY() + root.getH()) {
+        throw new QuadTreeException("Out of bounds : (" + x + ", " + y + ")");
+    }
+    if (this.insert(root, new Point(x, y, value))) {
+        this.count_++;
+    }
+} catch (Throwable t) {
+	t.printStackTrace();
+	System.exit(0);
+}
     }
 
     /**

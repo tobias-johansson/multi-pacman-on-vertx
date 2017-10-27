@@ -12,16 +12,20 @@ public class Wall {
 		this.upperLeft = new Location(anchor.x, anchor.y);
 		this.lowerRight = new Location(anchor.x+Constants.playerWidth, anchor.y+Constants.playerWidth);
 	}
+	public Location anchor() {
+		return anchor;
+	}
+	
 	public boolean contains(Location check) {
-        boolean collidesInEndX = collidesSpatial(check.x, anchor.x);
-        boolean collidesInEndY = collidesSpatial(check.y, anchor.y);
-        if (collidesInEndX && collidesInEndY) {
-            return true;
-        }
+		float upperLeftCheckx = check.x;
+		float upperLeftChecky = check.y;
+		float lowwerRightCheckx = check.x+Constants.playerWidth;
+		float lowwerRightChecky = check.y+Constants.playerWidth;
+		if (Math.max(upperLeft.x, upperLeftCheckx) <= Math.min(lowerRight.x, lowwerRightCheckx) &&
+	            Math.max(upperLeft.y, upperLeftChecky) <= Math.min(lowerRight.y, lowwerRightChecky)) {
+			return true;
+	    }
 		return false;
 	}
-    private boolean collidesSpatial(float x1, float x2) {
-        return Math.abs(x1-x2) < Constants.playerWidth;
-    }
 	
 }

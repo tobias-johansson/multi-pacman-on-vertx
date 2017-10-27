@@ -5,45 +5,43 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import com.seal.vertx.Constants;
 import com.seal.vertx.domain.SrcMazeData.PositionX;
 import com.seal.vertx.domain.SrcMazeData.PositionY;
-import com.seal.vertx.quadtree.Point;
-import com.seal.vertx.quadtree.QuadTree;
+import com.seal.vertx.quadtree.GridCollection;
 
 /**
  * Created by jacobsznajdman on 26/10/17.
  */
 public class Maze {
 	MazeData mazeData;
-	QuadTree quadTree;
+	GridCollection grid;
 	
+	/**
+	 *   *******
+	 *   **....*
+	 *   **.****
+	 *   **.****
+	 */
     public Maze() {
-    	try {
+		try {
 			mazeData = new Gson().fromJson(new String(Files.readAllBytes(Paths.get("client/maze.json"))), MazeData.class);
-	    	quadTree = new QuadTree(0.0, 0.0, 1.0, 1.0);
-	    	// populate qt with maze data
-	    	mazeData.wallBlocks.stream().forEach(loc -> quadTree.set(loc.x, loc.y, new Wall(loc)));
-		} catch (Exception e) {
+			List<Wall> walls = mazeData.wallBlocks.stream().map(loc -> new Wall(loc)).collect(Collectors.toList());
+			grid = new GridCollection(walls, 20, 20);
+		} catch (Throwable e) {
 			e.printStackTrace();
 			System.exit(-1);
-			// diediedie
 		}
     }
     
-    public boolean checkWallCollision(Location check) {
-    	return collide(check, neighborhood(check));
+    public boolean checkWallCollision(Location from, Location to) {
+    	return collide(to, neighborhood(to));
     }
     
     private List<Wall> neighborhood(Location check) {
-    	Point[] points = quadTree.searchIntersect(check.x - Constants.playerWidth, check.y - Constants.playerWidth, check.x + Constants.playerWidth, check.y + Constants.playerWidth);
-    	List<Wall> walls = new ArrayList<Wall>();
-    	for (Point p : points) {
-    		walls.add((Wall)p.getValue());
-    	}
-    	return walls;
+    	return grid.candidates(check);
     }
 
     private boolean collide(Location check, List<Wall> walls) {
