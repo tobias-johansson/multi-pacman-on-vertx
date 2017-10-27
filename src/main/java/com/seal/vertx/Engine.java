@@ -158,7 +158,7 @@ public class Engine {
 
     Function<PlayerState, PlayerState> revive(String id, GameState gameState) {
         return ps -> {
-            if (ps.player.id.equals(id)) {
+            if (!ps.player.id.equals(id)) {
                 return ps;
             } else {
                 return PlayerState.randomState(gameState, ps.player);
