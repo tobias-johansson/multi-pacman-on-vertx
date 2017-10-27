@@ -20,6 +20,8 @@ $(function () {
         .add("pacman", "images/pacman2.png")
         .add("ghost1", "images/ghost1.png")
         .load(function() {
+            var scaleX = app.renderer.width / 18 / 32;
+            var scaleY = app.renderer.height / 13 / 32
             $.getJSON( "maze2.json", function( data ) {
                 var blocks = data.wallBlocks
                 blocks.forEach ( function (block) {
@@ -27,8 +29,8 @@ $(function () {
                     sprite.x = block.x * app.renderer.width;
                     sprite.y = block.y * app.renderer.height;
                     // sprite.anchor.set(0.5);
-                    sprite.scale.x = app.renderer.width / 18 / 32;
-                    sprite.scale.y = app.renderer.height / 13 / 32;
+                    sprite.scale.x = scaleX;
+                    sprite.scale.y = scaleY;
                     app.stage.addChild(sprite);
                 });
             });
@@ -66,27 +68,29 @@ $(function () {
                             app.stage.addChild(sprite);
                         }
                         sprite.anchor.set(0.5);
-                        sprite.x = ps.location.x * app.renderer.width  + 32/2;
-                        sprite.y = ps.location.y * app.renderer.height + 32/2;
+                        sprite.x = ps.location.x * app.renderer.width  + 32*scaleX/2;
+                        sprite.y = ps.location.y * app.renderer.height + 32*scaleY/2;
+                        sprite.scale.x = scaleX;
+                        sprite.scale.y = scaleY;
                         switch(ps.direction) {
                             case 'UP':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = Math.PI * -0.5;
-                                sprite.scale.x = 1;
+                                sprite.scale.x = scaleX;
                                 break;
                             case 'DOWN':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = Math.PI * 0.5;
-                                sprite.scale.x = 1;
+                                sprite.scale.x = scaleX;
                                 break;
                             case 'RIGHT':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = 0;
-                                sprite.scale.x = 1;
+                                sprite.scale.x = scaleX;
                                 break;
                             case 'LEFT':
                                 sprite.rotation = 0;
-                                sprite.scale.x = -1;
+                                sprite.scale.x = -scaleX;
                                 break;
                         }
                         sprites[ps.player.id] = sprite;
