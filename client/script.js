@@ -24,6 +24,7 @@ $(function () {
         .add("pacmanyou", "images/pacman-you.png")
         .add("ghost", "images/ghost.png")
         .add("ghostyou", "images/ghost-you.png")
+        .add("rip", "images/rip.png")
         .load(function() {
             $.getJSON( "maze.json", function( data ) {
                 var blocks = data.wallBlocks
@@ -58,25 +59,25 @@ $(function () {
                 join();
                 eb.registerHandler('client', function (err, data) {
                     var state = JSON.parse(data.body);
-                    // console.log("state", state);
+                    console.log("state", state);
                     state.playerStates.forEach(function(ps) {
                         var sprite = sprites[ps.player.id];
-                        if (!sprite) {
-                            if (ps.player.type === 'GHOST') {
-                                if (ps.player.id == id) {
-                                    sprite = new PIXI.Sprite(PIXI.loader.resources.ghostyou.texture);
-                                } else {
-                                    sprite = new PIXI.Sprite(PIXI.loader.resources.ghost.texture);
-                                }
-                            } else {
-                                if (ps.player.id == id) {
-                                    sprite = new PIXI.Sprite(PIXI.loader.resources.pacmanyou.texture);
-                                } else {
-                                    sprite = new PIXI.Sprite(PIXI.loader.resources.pacman.texture);
-                                }
-                            }
-                            app.stage.addChild(sprite);
+                        var tx;
+                        if (ps.player.type === 'GHOST') {
+                            if (ps.player.id == id)      tx = PIXI.loader.resources.ghostyou.texture;
+                            else                         tx = PIXI.loader.resources.ghost.texture;
+                        } else {
+                            if (ps.status === 'DEAD')    tx = PIXI.loader.resources.rip.texture;
+                            else if (ps.player.id == id) tx = PIXI.loader.resources.pacmanyou.texture;
+                            else                         tx = PIXI.loader.resources.pacman.texture;
                         }
+                        if (!sprite) {
+                            sprite = new PIXI.Sprite(tx);
+                            app.stage.addChild(sprite);
+                        } else {
+                            sprite.setTexture(tx);
+                        }
+
                         sprite.anchor.set(0.5);
                         sprite.x = ps.location.x * 18 * tileSize + tileSize/2;
                         sprite.y = ps.location.y * 18 * tileSize + tileSize/2;
