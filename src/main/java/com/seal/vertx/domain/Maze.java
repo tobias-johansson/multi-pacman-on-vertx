@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.seal.vertx.Constants;
 import com.seal.vertx.domain.SrcMazeData.PositionX;
 import com.seal.vertx.domain.SrcMazeData.PositionY;
 import com.seal.vertx.quadtree.GridCollection;
@@ -63,19 +64,18 @@ public class Maze {
         locations.add( new Location(0.8f,0.8f));
         return locations;
     }
-    
+    // 18 cols 13 rows
     public static void GenerateMazeFile(String srcFile, String dstFile) throws IOException {
     	Gson gson = new Gson();
     	String jsonStr = new String(Files.readAllBytes(Paths.get(srcFile)));
     	SrcMazeData srcMazeData = gson.fromJson(jsonStr, SrcMazeData.class);
     	MazeData mazeData = new MazeData();
-    	float rows = srcMazeData.posY.length;
-    	float cols = srcMazeData.posY[0].posX.length;
+    	float cellSize = Constants.playerWidth;
     	for(PositionY posY : srcMazeData.posY) {
     		for(PositionX x : posY.posX) {
     			if (x.type.equals("wall")) {
     				// back position not center
-    				mazeData.wallBlocks.add(new Location(x.col/cols, posY.row/rows));
+    				mazeData.wallBlocks.add(new Location((x.col-1)*cellSize, (posY.row-1)*cellSize));
     			}
     		}
     	}
