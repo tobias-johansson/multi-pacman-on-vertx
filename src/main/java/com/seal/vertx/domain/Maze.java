@@ -47,6 +47,7 @@ public class Maze {
     private boolean collide(Location check, List<Wall> walls) {
     	for(Wall w : walls) {
     		if (w.contains(check)) {
+    			System.out.println("Collision with wall:"+w.anchor.x+" "+w.anchor.y+" and player:"+check.x+" "+check.y);
     			return true;
     		}
     	}

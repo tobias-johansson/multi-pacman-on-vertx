@@ -128,6 +128,9 @@ public class Engine {
     }
 
     private GameState updateState(GameState transforming, String userId, Action action) {
+    	if (null == action) {
+    		return transforming;
+    	}
         List<PlayerState> newPlayers = new ArrayList<>();
         Optional<PlayerState> player = current.playerStates.stream().filter(ps -> ps.player.id.equals(userId)).findFirst();
         if (player.isPresent()) {
