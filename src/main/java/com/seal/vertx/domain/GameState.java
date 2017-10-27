@@ -9,14 +9,12 @@ import java.util.List;
  */
 public class GameState {
     public final List<PlayerState> playerStates;
-    public final Maze maze;
 
-    public GameState(List<PlayerState> playerStates, Maze maze) {
+    public GameState(List<PlayerState> playerStates) {
         this.playerStates = playerStates;
-        this.maze = maze;
     }
 
     public static GameState initial() {
-        return new GameState(new ArrayList<>(), new Maze());
+        return new GameState(new ArrayList<>());
     }
 }

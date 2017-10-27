@@ -20,8 +20,8 @@ public class PlayerState {
         this.status = status;
     }
 
-    public static PlayerState randomState(GameState transforming, Player newPlayer) {
-        List<Location> spawningLocations = transforming.maze.getSpawningLocations();
+    public static PlayerState randomState(GameState transforming, Player newPlayer, Maze maze) {
+        List<Location> spawningLocations = maze.getSpawningLocations();
         int randomSpawn = rnd.nextInt(spawningLocations.size());
         Location location = spawningLocations.get(randomSpawn);
         int randomDirection = rnd.nextInt(4);
