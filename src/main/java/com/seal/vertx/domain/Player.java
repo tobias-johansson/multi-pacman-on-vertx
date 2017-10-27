@@ -16,7 +16,10 @@ public class Player {
     }
 
     public static Player randomPlayer(GameState transforming, String userId) {
-        PlayerType newPlayerType = rnd.nextBoolean() ? PlayerType.GHOST : PlayerType.PACMAN;
+        long players = transforming.playerStates.stream().count();
+        long ghosts = transforming.playerStates.stream().filter(ps -> ps.player.type == PlayerType.GHOST).count();
+        float fractionGhosts = (float)ghosts/(float)players;
+        PlayerType newPlayerType = rnd.nextFloat() > fractionGhosts ? PlayerType.GHOST : PlayerType.PACMAN;
         return new Player(userId, newPlayerType);
     }
 }
