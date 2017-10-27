@@ -33,4 +33,7 @@ public class GridCollection {
 		candidates(wall.anchor()).add(wall);
 	}
 
+	public Object[][] getGrid() {
+		return grid;
+	}
 }

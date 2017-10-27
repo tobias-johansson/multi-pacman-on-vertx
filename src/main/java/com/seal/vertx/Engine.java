@@ -113,16 +113,16 @@ public class Engine {
         return Math.abs(x1-x2) < Constants.playerWidth;
     }
 
-
     private List<PlayerState> wallCollidedPlayerStates(GameState transforming) {
         return transforming.playerStates.stream().map(ps -> {
             if (ps.status == Status.DEAD) {
                 return ps;
             }
-            float x = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.x + ps.direction.getX() * Constants.timeStep));
-            float y = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.y + ps.direction.getY() * Constants.timeStep));
-            Location check = new Location(x,y);
-            Location adjusted = (maze.checkWallCollision(ps.location, check)) ? ps.location : check;
+            float timeToHit = maze.timeToHit(ps.location, ps.direction);
+            float time = Math.min(timeToHit, Constants.timeStep);
+            float x = ps.location.x + ps.direction.getX() * time;
+            float y = ps.location.y + ps.direction.getY() * time;
+            Location adjusted = new Location(x,y);
             return new PlayerState(ps.player, adjusted, ps.direction, ps.status);
         }).collect(Collectors.toList());
     }
