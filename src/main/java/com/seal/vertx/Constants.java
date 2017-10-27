@@ -9,5 +9,5 @@ public class Constants {
     public static final float playerWidth = 1.0f / 18.0f;
     public static final float speed = 5.0f * (playerWidth / 1000f);
     public static final long deadTime = 3000;
-    public static final long inactiveTimeout = 5000;
+    public static final long inactiveTimeout = 3000;
 }
