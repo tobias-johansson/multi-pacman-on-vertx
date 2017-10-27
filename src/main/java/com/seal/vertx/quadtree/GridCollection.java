@@ -45,6 +45,7 @@ public class GridCollection {
 				return candidates;
 			}
 			candidates.addAll((List<Wall>)grid[x][y]);
+			System.out.println("Candidates size:"+candidates.size());
 		} while (candidates.isEmpty());
 		return candidates;
 	}

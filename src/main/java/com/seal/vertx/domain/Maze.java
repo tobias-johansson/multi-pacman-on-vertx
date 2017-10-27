@@ -46,10 +46,10 @@ public class Maze {
     		switch (dir) {
     		case UP :
     		case DOWN :
-    			delay = Math.abs(from.y - colliding.anchor.y) - Constants.playerWidth / dir.getY();
+    			delay = Math.abs(from.y - colliding.anchor.y) / dir.getY();
     			break;
     		default :
-    			delay = Math.abs(from.x - colliding.anchor.x) - Constants.playerWidth / dir.getX();
+    			delay = Math.abs(from.x - colliding.anchor.x)  / dir.getX();
     			break;
     		}
     	}
