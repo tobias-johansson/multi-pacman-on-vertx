@@ -30,7 +30,7 @@ public class Maze {
         try {
             mazeData = new Gson().fromJson(new String(Files.readAllBytes(Paths.get("client/maze.json"))), MazeData.class);
             List<Wall> walls = mazeData.wallBlocks.stream().map(loc -> new Wall(loc)).collect(Collectors.toList());
-            grid = new GridCollection(walls, 20, 20);
+            grid = new GridCollection(walls, 18, 13);
         } catch (Throwable e) {
             e.printStackTrace();
             System.exit(-1);
