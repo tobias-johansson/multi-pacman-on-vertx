@@ -21,6 +21,8 @@ public class Maze {
 	GridCollection grid;
 	
 	/**
+	 * 
+	 *   ...****
 	 *   *******
 	 *   **....*
 	 *   **.****
@@ -37,22 +39,35 @@ public class Maze {
 		}
     }
     
-    public boolean checkWallCollision(Location from, Location to) {
-    	return collide(to, neighborhood(to));
+    public float checkWallCollision(Location from, Direction dir) {
+    	Wall colliding = collide(from, neighborhood(from,dir));
+    	float delay = 0;
+    	if (null != colliding) {
+    		switch (dir) {
+    		case UP :
+    		case DOWN :
+    			delay = Math.abs(from.y - colliding.anchor.y) - Constants.playerWidth / dir.getY();
+    			break;
+    		default :
+    			delay = Math.abs(from.x - colliding.anchor.x) - Constants.playerWidth / dir.getX();
+    			break;
+    		}
+    	}
+    	return delay;
     }
     
-    private List<Wall> neighborhood(Location check) {
-    	return grid.candidates(check);
+    private List<Wall> neighborhood(Location from, Direction dir) {
+    	return grid.candidates(from, dir);
     }
 
-    private boolean collide(Location check, List<Wall> walls) {
+    private Wall collide(Location check, List<Wall> walls) {
     	for(Wall w : walls) {
     		if (w.contains(check)) {
     			System.out.println("Collision with wall:"+w.anchor.x+" "+w.anchor.y+" and player:"+check.x+" "+check.y);
-    			return true;
+    			return w;
     		}
     	}
-    	return false;
+    	return null;
     }
     
     public List<Location> getSpawningLocations() {

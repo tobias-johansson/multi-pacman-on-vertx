@@ -3,6 +3,7 @@ package com.seal.vertx.quadtree;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.seal.vertx.domain.Direction;
 import com.seal.vertx.domain.Location;
 import com.seal.vertx.domain.Wall;
 
@@ -23,14 +24,33 @@ public class GridCollection {
 		blocks.stream().forEach(wall -> insert(wall));
 	}
 
-	public List<Wall> candidates(Location check) {
+	
+	public List<Wall> candidatesAt(Location check) {
 		int x = (int)(check.x * xRange);
 		int y = (int)(check.y * yRange);
 		return (List<Wall>)grid[x][y];
 	}
 	
+	public List<Wall> candidates(Location check, Direction dir) {
+		// check starts at from position.. verify that initally
+		int x = (int)(check.x * xRange);
+		int y = (int)(check.y * yRange);
+		List<Wall> candidates = (List<Wall>)grid[x][y];
+		int xInc = (Direction.LEFT.equals(dir)) ? -1 : (Direction.RIGHT.equals(dir)) ? 1 :0;
+		int yInc = (Direction.UP.equals(dir)) ? -1 : (Direction.DOWN.equals(dir)) ? 1 :0;
+		do {
+			x += xInc;
+			y += yInc;
+			if (x < 0 || x > xRange || y < 0 || y > yRange) {
+				return candidates;
+			}
+			candidates.addAll((List<Wall>)grid[x][y]);
+		} while (candidates.isEmpty());
+		return candidates;
+	}
+	
 	public void insert(Wall wall) {
-		candidates(wall.anchor()).add(wall);
+		candidatesAt(wall.anchor()).add(wall);
 	}
 
 }

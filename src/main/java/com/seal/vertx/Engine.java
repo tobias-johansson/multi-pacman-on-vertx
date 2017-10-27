@@ -122,8 +122,8 @@ public class Engine {
             float x = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.x + ps.direction.getX() * Constants.timeStep));
             float y = Math.min(1.0f - Constants.playerWidth, Math.max(0.0f, ps.location.y + ps.direction.getY() * Constants.timeStep));
             Location check = new Location(x,y);
-            Location adjusted = (maze.checkWallCollision(ps.location, check)) ? ps.location : check;
-            return new PlayerState(ps.player, adjusted, ps.direction, ps.status);
+            float timeTraveled = maze.checkWallCollision(ps.location, ps.direction);
+            return new PlayerState(ps.player, check, ps.direction, ps.status);
         }).collect(Collectors.toList());
     }
 
