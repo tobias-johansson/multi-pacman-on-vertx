@@ -10,7 +10,10 @@ $(function () {
     var ebUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/eventbus'
     console.log("ubUrl", ebUrl)
 
-    var app = new PIXI.Application(800, 600, {backgroundColor : 0x1099bb});
+    var tileSize = 40;
+    var tileScale = tileSize/32;
+    var app = new PIXI.Application(18*tileSize, 13*tileSize, {backgroundColor : 0x1099bb});
+
     document.body.appendChild(app.view);
 
     sprites = {};
@@ -20,17 +23,14 @@ $(function () {
         .add("pacman", "images/pacman2.png")
         .add("ghost1", "images/ghost1.png")
         .load(function() {
-            var scaleX = app.renderer.width / 18 / 32;
-            var scaleY = app.renderer.height / 13 / 32
-            $.getJSON( "maze2.json", function( data ) {
+            $.getJSON( "maze.json", function( data ) {
                 var blocks = data.wallBlocks
                 blocks.forEach ( function (block) {
                     var sprite = new PIXI.Sprite(PIXI.loader.resources.wall.texture);
-                    sprite.x = block.x * app.renderer.width;
-                    sprite.y = block.y * app.renderer.height;
-                    // sprite.anchor.set(0.5);
-                    sprite.scale.x = scaleX;
-                    sprite.scale.y = scaleY;
+                    sprite.x = block.x * 18 * tileSize;
+                    sprite.y = block.y * 18 * tileSize;
+                    sprite.scale.x = tileScale;
+                    sprite.scale.y = tileScale;
                     app.stage.addChild(sprite);
                 });
             });
@@ -68,29 +68,29 @@ $(function () {
                             app.stage.addChild(sprite);
                         }
                         sprite.anchor.set(0.5);
-                        sprite.x = ps.location.x * app.renderer.width  + 32*scaleX/2;
-                        sprite.y = ps.location.y * app.renderer.height + 32*scaleY/2;
-                        sprite.scale.x = scaleX;
-                        sprite.scale.y = scaleY;
+                        sprite.x = ps.location.x * 18 * tileSize + tileSize/2;
+                        sprite.y = ps.location.y * 18 * tileSize + tileSize/2;
+                        sprite.scale.x = tileScale;
+                        sprite.scale.y = tileScale;
                         switch(ps.direction) {
                             case 'UP':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = Math.PI * -0.5;
-                                sprite.scale.x = scaleX;
+                                sprite.scale.x = tileScale;
                                 break;
                             case 'DOWN':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = Math.PI * 0.5;
-                                sprite.scale.x = scaleX;
+                                sprite.scale.x = tileScale;
                                 break;
                             case 'RIGHT':
                                 if (ps.player.type === 'GHOST') break;
                                 sprite.rotation = 0;
-                                sprite.scale.x = scaleX;
+                                sprite.scale.x = tileScale;
                                 break;
                             case 'LEFT':
                                 sprite.rotation = 0;
-                                sprite.scale.x = -scaleX;
+                                sprite.scale.x = -tileScale;
                                 break;
                         }
                         sprites[ps.player.id] = sprite;
