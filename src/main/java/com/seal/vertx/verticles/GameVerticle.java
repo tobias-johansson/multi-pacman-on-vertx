@@ -10,6 +10,7 @@ import com.seal.vertx.domain.GameState;
 import com.seal.vertx.logic.UserInputManager;
 import com.seal.vertx.message.ActionMessage;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonObject;
 
 
 /**
@@ -46,7 +47,7 @@ public class GameVerticle extends AbstractVerticle {
         vertx.setTimer(Constants.deadTime, l -> {
             ActionMessage am = new ActionMessage(Action.REVIVE, id);
             String json = gson.toJson(am, ActionMessage.class);
-            vertx.eventBus().send("action", json);
+            vertx.eventBus().send("action", new JsonObject(json));
         });
     }
 }

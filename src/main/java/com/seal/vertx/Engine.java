@@ -24,6 +24,7 @@ public class Engine {
     private Maze maze;
 
     public Engine(GameVerticle gameVerticle) {
+        this.maze = new Maze();
         this.gameVerticle = gameVerticle;
         this.maze = new Maze();
     }
@@ -84,7 +85,7 @@ public class Engine {
                 throw new RuntimeException("Unimplemented player type");
             }
         }
-        return new GameState(newPlayerStates, transforming.maze);
+        return new GameState(newPlayerStates);
     }
 
     private boolean collides(PlayerState ghost1, PlayerState ghost2, PlayerState pacman1, PlayerState pacman2) {
@@ -132,17 +133,17 @@ public class Engine {
         if (player.isPresent()) {
             switch (action) {
                 case UP:
-                    return new GameState(transforming.playerStates.stream().map(turn(userId, UP)).collect(Collectors.toList()), transforming.maze);
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, UP)).collect(Collectors.toList()));
                 case DOWN:
-                    return new GameState(transforming.playerStates.stream().map(turn(userId, DOWN)).collect(Collectors.toList()), transforming.maze);
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, DOWN)).collect(Collectors.toList()));
                 case LEFT:
-                    return new GameState(transforming.playerStates.stream().map(turn(userId, LEFT)).collect(Collectors.toList()), transforming.maze);
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, LEFT)).collect(Collectors.toList()));
                 case RIGHT:
-                    return new GameState(transforming.playerStates.stream().map(turn(userId, RIGHT)).collect(Collectors.toList()), transforming.maze);
+                    return new GameState(transforming.playerStates.stream().map(turn(userId, RIGHT)).collect(Collectors.toList()));
                 case QUIT:
-                    return new GameState(transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId)).collect(Collectors.toList()), transforming.maze);
+                    return new GameState(transforming.playerStates.stream().filter(ps -> !ps.player.id.equals(userId)).collect(Collectors.toList()));
                 case REVIVE:
-                    return new GameState(transforming.playerStates.stream().map(revive(userId, transforming)).collect(Collectors.toList()), transforming.maze);
+                    return new GameState(transforming.playerStates.stream().map(revive(userId, transforming)).collect(Collectors.toList()));
                 default:
                     return transforming;
             }
@@ -150,10 +151,10 @@ public class Engine {
             switch (action) {
                 case JOIN:
                     Player newPlayer = Player.randomPlayer(transforming, userId);
-                    PlayerState newState = PlayerState.randomState(transforming, newPlayer);
+                    PlayerState newState = PlayerState.randomState(transforming, newPlayer, maze);
                     newPlayers.add(newState);
                     newPlayers.addAll(transforming.playerStates);
-                    return new GameState(newPlayers, transforming.maze);
+                    return new GameState(newPlayers);
                 default:
                     return transforming;
             }
@@ -162,10 +163,10 @@ public class Engine {
 
     Function<PlayerState, PlayerState> revive(String id, GameState gameState) {
         return ps -> {
-            if (ps.player.id.equals(id)) {
+            if (!ps.player.id.equals(id)) {
                 return ps;
             } else {
-                return PlayerState.randomState(gameState, ps.player);
+                return PlayerState.randomState(gameState, ps.player, maze);
             }
         };
     }
