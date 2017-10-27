@@ -122,7 +122,10 @@ public class Maze {
     private float timeToHitX(float x, float d, List<Wall> xWallCandidates) {
         float time = 100000;
         for (Wall wall : xWallCandidates) {
-            time = Math.min(time, timeToHitX(x,d, wall));
+            float wallTime = timeToHitX(x,d, wall);
+            if (wallTime >= 0) {
+                time = Math.min(time, wallTime);
+            }
         }
         return time;
     }
@@ -130,7 +133,10 @@ public class Maze {
     private float timeToHitY(float y, float d, List<Wall> yWallCandidates) {
         float time = 100000;
         for (Wall wall : yWallCandidates) {
-            time = Math.min(time, timeToHitY(y,d, wall));
+            float wallTime = timeToHitY(y, d, wall);
+            if (wallTime >= 0) {
+                time = Math.min(time, wallTime);
+            }
         }
         return time;
     }
