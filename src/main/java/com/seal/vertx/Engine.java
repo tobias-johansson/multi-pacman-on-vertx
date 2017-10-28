@@ -23,10 +23,9 @@ public class Engine {
     private GameVerticle gameVerticle;
     private Maze maze;
 
-    public Engine(GameVerticle gameVerticle) {
-        this.maze = new Maze();
+    public Engine(GameVerticle gameVerticle, Maze maze) {
+        this.maze = maze;
         this.gameVerticle = gameVerticle;
-        this.maze = new Maze();
     }
 
     public void start() {
@@ -127,11 +126,7 @@ public class Engine {
             if (ps.status == Status.DEAD) {
                 return ps;
             }
-            float timeToHit = maze.timeToHit(ps.location, ps.direction);
-            float time = Math.min(timeToHit, Constants.timeStep);
-            float x = ps.location.x + ps.direction.getX() * time;
-            float y = ps.location.y + ps.direction.getY() * time;
-            Location adjusted = new Location(x,y);
+            Location adjusted = maze.move(ps.location, ps.direction);
             return new PlayerState(ps.player, adjusted, ps.direction, ps.status);
         }).collect(Collectors.toList());
     }
