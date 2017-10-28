@@ -35,7 +35,7 @@ public class Engine {
 
     public GameState update(Map<String, Action> actions, List<String> activeUsers) {
         GameState transforming = current;
-        transforming = dropInactiveUsers(transforming, activeUsers);
+        //transforming = dropInactiveUsers(transforming, activeUsers);
         for (String userId : actions.keySet()) {
             transforming = updateState(transforming, userId, actions.get(userId));
         }

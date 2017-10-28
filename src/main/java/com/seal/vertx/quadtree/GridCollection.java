@@ -3,6 +3,7 @@ package com.seal.vertx.quadtree;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.seal.vertx.Constants;
 import com.seal.vertx.domain.Location;
 import com.seal.vertx.domain.Wall;
 
@@ -24,8 +25,8 @@ public class GridCollection {
 	}
 
 	public List<Wall> candidates(Location check) {
-		int x = (int)(check.x * xRange);
-		int y = (int)(check.y * yRange);
+		int x = Math.round(check.x / Constants.playerWidth);
+		int y = Math.round(check.y / Constants.playerWidth);
 		return (List<Wall>)grid[x][y];
 	}
 	

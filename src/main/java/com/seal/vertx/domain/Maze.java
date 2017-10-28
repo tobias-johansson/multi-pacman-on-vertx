@@ -153,10 +153,11 @@ public class Maze {
         int xDirSign = (int)Math.signum(direction.getX());
         for (int row : rowsToCheck) {
             for (int i = 0; i < maxBlocksMoved; i++) {
-                if (coli + i*xDirSign == grid.getGrid().length) {
+                int col = coli + i * xDirSign;
+                if (col >= grid.getGrid().length ||  row >= grid.getGrid()[col].length) {
                     break;
                 }
-                rowWalls.addAll((List<Wall>)grid.getGrid()[coli + i*xDirSign][row]);
+                rowWalls.addAll((List<Wall>)grid.getGrid()[col][row]);
             }
         }
         return rowWalls;
@@ -167,7 +168,8 @@ public class Maze {
         int yDirSign = (int)Math.signum(direction.getY());
         for (int col : colsToCheck) {
             for (int i = 0; i < maxBlocksMoved; i++) {
-                if (rowi + i*yDirSign == grid.getGrid()[col].length) {
+                int row = rowi + i*yDirSign;
+                if (col >= grid.getGrid().length || row >= grid.getGrid()[col].length) {
                     break;
                 }
                 colWalls.addAll((List<Wall>)grid.getGrid()[col][rowi + i*yDirSign]);

@@ -10,5 +10,5 @@ public class Constants {
     public static final float speed = 5.0f * (playerWidth / 1000f);
     public static final float wallEpsilon = 0.005f;
     public static final long deadTime = 3000;
-    public static final long inactiveTimeout = 3000;
+    public static final long inactiveTimeout = 300000;
 }
