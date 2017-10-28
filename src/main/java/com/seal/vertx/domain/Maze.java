@@ -151,12 +151,35 @@ public class Maze {
         boolean sideWays = direction.getX() != 0;
         List<Integer> colsToCheck = colsToCheck(location);
         List<Integer> rowsToCheck = rowsToCheck(location);
+        int boundary = getBoundary(xDirSign, yDirSign, sideWays, colsToCheck, rowsToCheck);
         while (timeLeft != 0) {
-            if (sideWays) {
-                
-            }
+            boolean blocked = isBlocked(boundary, sideWays, colsToCheck, rowsToCheck);
         }
         return new Location(x,y);
+    }
+
+    private boolean isBlocked(int boundary, boolean sideWays, List<Integer> colsToCheck, List<Integer> rowsToCheck) {
+        if (sideWays) {
+            
+        } else {
+
+        }
+    }
+
+    private int getBoundary(int xDirSign, int yDirSign, boolean sideWays, List<Integer> colsToCheck, List<Integer> rowsToCheck) {
+        if (sideWays) {
+            if (xDirSign > 0) {
+                return colsToCheck.get(colsToCheck.size() - 1) + 1;
+            } else {
+                return colsToCheck.get(0) - 1;
+            }
+        } else {
+            if (yDirSign > 0) {
+                return rowsToCheck.get(rowsToCheck.size() - 1) + 1;
+            } else {
+                return rowsToCheck.get(0) - 1;
+            }
+        }
     }
 
     private List<Integer> rowsToCheck(Location location) {
