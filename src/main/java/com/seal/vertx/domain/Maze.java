@@ -82,6 +82,9 @@ public class Maze {
 
     private boolean anyWallInBoundary(List<GridCoordinates> boundary) {
         for (GridCoordinates square : boundary) {
+            if (square.x >= grid.length || square.x < 0 || square.y >= grid[0].length || square.y < 0) {
+                return true;
+            }
             if (grid[square.x][square.y]) {
                 return true;
             }
@@ -103,26 +106,26 @@ public class Maze {
         List<GridCoordinates> boundary = new ArrayList<>();
         switch (direction) {
             case UP:
-                for (int row : rowsToCheck) {
-                    int col = colsToCheck.get(0) - 1;
+                for (int col : colsToCheck) {
+                    int row = rowsToCheck.get(0) - 1;
                     boundary.add(new GridCoordinates(col, row));
                 }
                 return boundary;
             case DOWN:
-                for (int row : rowsToCheck) {
-                    int col = colsToCheck.get(colsToCheck.size()-1) + 1;
-                    boundary.add(new GridCoordinates(col, row));
-                }
-                return boundary;
-            case RIGHT:
                 for (int col : colsToCheck) {
                     int row = rowsToCheck.get(rowsToCheck.size()-1) + 1;
                     boundary.add(new GridCoordinates(col, row));
                 }
                 return boundary;
+            case RIGHT:
+                for (int row : rowsToCheck) {
+                    int col = colsToCheck.get(colsToCheck.size()-1) + 1;
+                    boundary.add(new GridCoordinates(col, row));
+                }
+                return boundary;
             case LEFT:
-                for (int col : colsToCheck) {
-                    int row = rowsToCheck.get(0) - 1;
+                for (int row : rowsToCheck) {
+                    int col = colsToCheck.get(0) - 1;
                     boundary.add(new GridCoordinates(col, row));
                 }
                 return boundary;
