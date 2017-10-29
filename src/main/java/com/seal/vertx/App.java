@@ -21,7 +21,7 @@ public class App {
 
     public static void main(String[] args) throws IOException {
     	// one time gen of our datafile
-    	//Maze.GenerateMazeFile("client/platzhersh.json", "client/maze.json");
+    	//Maze.parseMazeFile("client/platzhersh.json", "client/maze.json");
     	
         Vertx vertx = Vertx.vertx();
         HttpServer server = vertx.createHttpServer();

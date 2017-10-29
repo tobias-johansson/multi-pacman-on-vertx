@@ -7,6 +7,7 @@ import com.seal.vertx.Constants;
 import com.seal.vertx.Engine;
 import com.seal.vertx.domain.Action;
 import com.seal.vertx.domain.GameState;
+import com.seal.vertx.domain.Maze;
 import com.seal.vertx.logic.UserInputManager;
 import com.seal.vertx.message.ActionMessage;
 import io.vertx.core.AbstractVerticle;
@@ -24,7 +25,7 @@ public class GameVerticle extends AbstractVerticle {
 
     public GameVerticle() {
         this.userInputManager = new UserInputManager();
-        this.engine = new Engine(this);
+        this.engine = new Engine(this, new Maze());
         this.gson = new Gson();
     }
 
