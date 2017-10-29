@@ -10,13 +10,15 @@ public class PlayerState {
     public final Player player;
     public final Location location;
     public final Direction direction;
+    public final Direction desiredDirection;
     public final Status status;
     private static final Random rnd = new Random();
 
-    public PlayerState(Player player, Location location, Direction direction, Status status) {
+    public PlayerState(Player player, Location location, Direction direction, Direction desiredDirection, Status status) {
         this.player = player;
         this.location = location;
         this.direction = direction;
+        this.desiredDirection = desiredDirection;
         this.status = status;
     }
 
@@ -42,6 +44,6 @@ public class PlayerState {
             default:
                 break;
         }
-        return new PlayerState(newPlayer, location, direction, Status.ALIVE);
+        return new PlayerState(newPlayer, location, direction, direction, Status.ALIVE);
     }
 }

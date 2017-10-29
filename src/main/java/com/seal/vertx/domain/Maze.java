@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.seal.vertx.CollisionDetection;
@@ -19,6 +21,7 @@ public class Maze {
     private static final Logger LOG = LoggerFactory.getLogger(Maze.class);
 
     public final boolean[][] grid;
+    public final Set[][] blockedDirections;
 
     /**
      *   *******
@@ -29,6 +32,35 @@ public class Maze {
     public Maze() {
         SrcMazeData src = parseMazeFile();
         this.grid = gridFromSrc(src);
+        this.blockedDirections = blockedDirectionsFromGrid(this.grid);
+    }
+
+    private Set<Direction>[][] blockedDirectionsFromGrid(boolean[][] grid) {
+        int cols = grid.length;
+        int rows = grid[0].length;
+        Set[][] blockedDirections = new Set[cols][rows];
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows; row++) {
+                addBlockedDirection(Direction.UP, col, row, col, row - 1, blockedDirections, grid, cols, rows);
+                addBlockedDirection(Direction.DOWN, col, row, col, row + 1, blockedDirections, grid, cols, rows);
+                addBlockedDirection(Direction.RIGHT, col, row, col + 1, row, blockedDirections, grid, cols, rows);
+                addBlockedDirection(Direction.LEFT, col, row, col - 1, row, blockedDirections, grid, cols, rows);
+            }
+        }
+        return blockedDirections;
+    }
+
+    private void addBlockedDirection(Direction dir, int col, int row, int colNeigh, int rowNeigh,
+                                     Set[][] blockedDirections, boolean[][] grid, int cols, int rows) {
+        if (colNeigh >= 0 && rowNeigh >= 0 && colNeigh < cols && rowNeigh < rows) {
+            if (grid[colNeigh][rowNeigh]) {
+                if (blockedDirections[col][row] == null) {
+                    blockedDirections[col][row] = new HashSet();
+                }
+                blockedDirections[col][row].add(dir);
+            }
+        }
+
     }
 
     public List<Location> getSpawningLocations() {
@@ -156,5 +188,9 @@ public class Maze {
             colsToCheck.add(colf > coli ? coli + 1 : coli - 1);
         }
         return colsToCheck;
+    }
+
+    public float timeToTurnPoint(Location location, Direction direction, Direction desiredDirection) {
+        return 0;
     }
 }

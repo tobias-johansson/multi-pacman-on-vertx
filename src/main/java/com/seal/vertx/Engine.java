@@ -85,7 +85,8 @@ public class Engine {
                     newPlayerStates.add(playerState);
                 } else {
                     PlayerState oldState = wallCollidedPlayerStates.get(i);
-                    PlayerState deadPacman = new PlayerState(oldState.player, oldState.location, oldState.direction, Status.DEAD);
+                    PlayerState deadPacman = new PlayerState(oldState.player, oldState.location, oldState.direction,
+                            oldState.desiredDirection, Status.DEAD);
                     gameVerticle.scheduleReviving(oldState.player.id);
                     newPlayerStates.add(deadPacman);
                 }
@@ -102,10 +103,16 @@ public class Engine {
                 return ps;
             }
             float timeToWall = maze.timeToWallImpact(ps.location, ps.direction);
+            float timeToTurnPoint = maze.timeToTurnPoint(ps.location, ps.direction, ps.desiredDirection);
+            Direction newDirection = ps.direction;
+            if (timeToTurnPoint <= timeToWall) {
+                timeToWall = timeToTurnPoint;
+                newDirection = ps.desiredDirection;
+            }
             float adjustedX = ps.location.x + timeToWall * ps.direction.getX();
             float adjustedY = ps.location.y + timeToWall * ps.direction.getY();
             Location adjusted = new Location(adjustedX, adjustedY);
-            return new PlayerState(ps.player, adjusted, ps.direction, ps.status);
+            return new PlayerState(ps.player, adjusted, newDirection, ps.desiredDirection, ps.status);
         }).collect(Collectors.toList());
     }
 
@@ -156,14 +163,13 @@ public class Engine {
         };
     }
 
-    Function<PlayerState, PlayerState> turn(String id, Direction dir) {
+    Function<PlayerState, PlayerState> turn(String id, Direction desiredDirection) {
         return ps -> {
             if (ps.player.id.equals(id) && ps.status == Status.ALIVE) {
-                return new PlayerState(ps.player, ps.location, dir, ps.status);
+                return new PlayerState(ps.player, ps.location, ps.direction, desiredDirection, ps.status);
             } else {
                 return ps;
             }
         };
     }
-
 }

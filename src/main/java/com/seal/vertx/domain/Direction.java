@@ -6,7 +6,7 @@ import static com.seal.vertx.Constants.speed;
  * Created by jacobsznajdman on 26/10/17.
  */
 public enum Direction {
-    UP, DOWN, LEFT, RIGHT, ZERO;
+    UP, DOWN, LEFT, RIGHT;
 
     public float getX() {
         switch (this) {
@@ -18,8 +18,6 @@ public enum Direction {
                 return speed;
             case LEFT:
                 return -speed;
-            case ZERO:
-                return 0;
             default:
                 throw new RuntimeException("Unimplemented direction");
         }
@@ -34,8 +32,6 @@ public enum Direction {
             case RIGHT:
                 return 0;
             case LEFT:
-                return 0;
-            case ZERO:
                 return 0;
             default:
                 throw new RuntimeException("Unimplemented direction");
