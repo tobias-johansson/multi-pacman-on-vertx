@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.seal.vertx.CollisionDetection;
 import com.seal.vertx.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,123 +63,71 @@ public class Maze {
         return grid;
     }
 
-    public float timeToHit(Location location, Direction direction) {
-        float absoluteSpeed = Math.abs(direction.getX() + direction.getY());
-        int maxBlocksMoved = (int) Math.ceil(absoluteSpeed * Constants.timeStep/Constants.playerWidth) + 1;
-
-        List<GridCoordinates> yWallCandidates = getYWallCandidates(direction, maxBlocksMoved, rowi, colsToCheck);
-        //List<GridCoordinates> xWallCandidates = getXWallCandidates(direction, maxBlocksMoved, coli, rowsToCheck);
-        /*switch (direction) {
-            case UP:
-                return timeToHitY(location.y, direction.getY(), yWallCandidates);
-            case DOWN:
-                return timeToHitY(location.y, direction.getY(), yWallCandidates);
-            case LEFT:
-                return timeToHitX(location.x, direction.getX(), xWallCandidates);
-            case RIGHT:
-                return timeToHitX(location.x, direction.getX(), xWallCandidates);
-            default:
-                return 0;
-        }*/
-        return 0;
-    }
-//    private float timeToHitX(float x, float d, List<Wall> xWallCandidates) {
-//        float time = 100000;
-//        for (Wall wall : xWallCandidates) {
-//            float wallTime = timeToHitX(x,d, wall);
-//            if (wallTime >= 0) {
-//                time = Math.min(time, wallTime);
-//            }
-//        }
-//        return time;
-//    }
-//
-//    private float timeToHitY(float y, float d, List<Wall> yWallCandidates) {
-//        float time = 100000;
-//        for (Wall wall : yWallCandidates) {
-//            float wallTime = timeToHitY(y, d, wall);
-//            if (wallTime >= 0) {
-//                time = Math.min(time, wallTime);
-//            }
-//        }
-//        return time;
-//    }
-//
-//    private float timeToHitX(float x, float d, Wall wall) {
-//        return (wall.anchor.x - x - Constants.playerWidth)/d;
-//    }
-//
-//    private float timeToHitY(float y, float d, Wall wall) {
-//        return (wall.anchor.y - y - Constants.playerWidth)/d;
-//    }
-
-//    private List<Wall> getXWallCandidates(Direction direction, int maxBlocksMoved, int coli, List<Integer> rowsToCheck) {
-//        List<Wall> rowWalls = new ArrayList<>();
-//        int xDirSign = (int)Math.signum(direction.getX());
-//        for (int row : rowsToCheck) {
-//            for (int i = 0; i < maxBlocksMoved; i++) {
-//                int col = coli + i * xDirSign;
-//                if (col >= grid.getGrid().length ||  row >= grid.getGrid()[col].length) {
-//                    break;
-//                }
-//                rowWalls.addAll((List<Wall>)grid.getGrid()[col][row]);
-//            }
-//        }
-//        return rowWalls;
-//    }
-
-    private List<GridCoordinates> getYWallCandidates(Direction direction, int maxBlocksMoved, int rowi, List<Integer> colsToCheck) {
-        List<GridCoordinates> colWalls = new ArrayList<>();
-        int yDirSign = (int)Math.signum(direction.getY());
-        for (int col : colsToCheck) {
-            for (int i = -1; i < maxBlocksMoved; i++) {
-                int row = rowi + i*yDirSign;
-                if (col >= grid.getGrid().length || row >= grid.getGrid()[col].length) {
-                    break;
-                }
-                colWalls.addAll((List<Wall>)grid.getGrid()[col][rowi + i*yDirSign]);
-            }
-        }
-        return colWalls;
-    }
-
-    public Location move(Location location, Direction direction) {
-        float timeLeft = Constants.timeStep;
-        float x = location.x;
-        float y = location.y;
-        int xDirSign = (int)Math.signum(direction.getX());
-        int yDirSign = (int)Math.signum(direction.getY());
-        boolean sideWays = direction.getX() != 0;
+    public float timeToWallImpact(Location location, Direction direction) {
         List<Integer> colsToCheck = colsToCheck(location);
         List<Integer> rowsToCheck = rowsToCheck(location);
-        int boundary = getBoundary(xDirSign, yDirSign, sideWays, colsToCheck, rowsToCheck);
-        while (timeLeft != 0) {
-            boolean blocked = isBlocked(boundary, sideWays, colsToCheck, rowsToCheck);
+        List<GridCoordinates> boundary = getBoundary(direction, colsToCheck, rowsToCheck);
+        float timeSpent = 0;
+        while (timeSpent < Constants.timeStep) {
+            GridCoordinates b1 = boundary.get(0);
+            timeSpent = CollisionDetection.timeToImpact(location, direction.getX(), direction.getY(),
+                    new Location(b1.x * Constants.playerWidth, b1.y * Constants.playerWidth), 0, 0);
+            if (anyWallInBoundary(boundary)) {
+                return Math.min(Constants.timeStep, timeSpent);
+            }
+            boundary = moveBoundary(boundary, direction);
         }
-        return new Location(x,y);
+        return Constants.timeStep;
     }
 
-    private boolean isBlocked(int boundary, boolean sideWays, List<Integer> colsToCheck, List<Integer> rowsToCheck) {
-        if (sideWays) {
-            
-        } else {
-
+    private boolean anyWallInBoundary(List<GridCoordinates> boundary) {
+        for (GridCoordinates square : boundary) {
+            if (grid[square.x][square.y]) {
+                return true;
+            }
         }
+        return false;
     }
 
-    private int getBoundary(int xDirSign, int yDirSign, boolean sideWays, List<Integer> colsToCheck, List<Integer> rowsToCheck) {
-        if (sideWays) {
-            if (xDirSign > 0) {
-                return colsToCheck.get(colsToCheck.size() - 1) + 1;
-            } else {
-                return colsToCheck.get(0) - 1;
-            }
-        } else {
-            if (yDirSign > 0) {
-                return rowsToCheck.get(rowsToCheck.size() - 1) + 1;
-            } else {
-                return rowsToCheck.get(0) - 1;
-            }
+    private List<GridCoordinates> moveBoundary(List<GridCoordinates> boundary, Direction direction) {
+        int dx = (int)Math.signum(direction.getX());
+        int dy = (int)Math.signum(direction.getY());
+        List<GridCoordinates> movedBoundary = new ArrayList<>();
+        for (GridCoordinates square : boundary) {
+            movedBoundary.add(new GridCoordinates(square.x + dx, square.y + dy));
+        }
+        return movedBoundary;
+    }
+
+    private List<GridCoordinates> getBoundary(Direction direction, List<Integer> colsToCheck, List<Integer> rowsToCheck) {
+        List<GridCoordinates> boundary = new ArrayList<>();
+        switch (direction) {
+            case UP:
+                for (int row : rowsToCheck) {
+                    int col = colsToCheck.get(0) - 1;
+                    boundary.add(new GridCoordinates(col, row));
+                }
+                return boundary;
+            case DOWN:
+                for (int row : rowsToCheck) {
+                    int col = colsToCheck.get(colsToCheck.size()-1) + 1;
+                    boundary.add(new GridCoordinates(col, row));
+                }
+                return boundary;
+            case RIGHT:
+                for (int col : colsToCheck) {
+                    int row = rowsToCheck.get(rowsToCheck.size()-1) + 1;
+                    boundary.add(new GridCoordinates(col, row));
+                }
+                return boundary;
+            case LEFT:
+                for (int col : colsToCheck) {
+                    int row = rowsToCheck.get(0) - 1;
+                    boundary.add(new GridCoordinates(col, row));
+                }
+                return boundary;
+            default:
+                throw new RuntimeException("Direction should be base direction");
         }
     }
 
