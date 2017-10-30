@@ -36,7 +36,8 @@ public class Engine {
         GameState transforming = current;
         //transforming = dropInactiveUsers(transforming, activeUsers);
         for (String userId : actions.keySet()) {
-            transforming = updateState(transforming, userId, actions.get(userId));
+            Action action = actions.get(userId);
+            transforming = updateState(transforming, userId, action);
         }
         current = updateMechanics(transforming);
         return current;
@@ -102,18 +103,34 @@ public class Engine {
             if (ps.status == Status.DEAD) {
                 return ps;
             }
+            if (warp(ps.location, ps.direction)) {
+                Location warped = new Location(maze.grid.length * Constants.playerWidth - ps.location.x, ps.location.y);
+                ps = new PlayerState(ps.player, warped, ps.direction, ps.desiredDirection, ps.status);
+            }
             float timeToWall = maze.timeToWallImpact(ps.location, ps.direction);
-            float timeToTurnPoint = maze.timeToTurnPoint(ps.location, ps.direction, ps.desiredDirection);
             Direction newDirection = ps.direction;
-            if (timeToTurnPoint <= timeToWall) {
-                timeToWall = timeToTurnPoint;
-                newDirection = ps.desiredDirection;
+            if (ps.desiredDirection != ps.direction) {
+                float timeToTurnPoint = maze.timeToTurnPoint(ps.location, ps.direction, ps.desiredDirection);
+                if (timeToTurnPoint <= timeToWall) {
+                    timeToWall = timeToTurnPoint;
+                    newDirection = ps.desiredDirection;
+                }
             }
             float adjustedX = ps.location.x + timeToWall * ps.direction.getX();
             float adjustedY = ps.location.y + timeToWall * ps.direction.getY();
             Location adjusted = new Location(adjustedX, adjustedY);
             return new PlayerState(ps.player, adjusted, newDirection, ps.desiredDirection, ps.status);
         }).collect(Collectors.toList());
+    }
+
+    private boolean warp(Location adjusted, Direction direction) {
+        if (direction == RIGHT && adjusted.x > (maze.grid.length-1)*Constants.playerWidth - Constants.wallEpsilon * Constants.playerWidth) {
+            return true;
+        }
+        if (direction == LEFT && adjusted.x < Constants.wallEpsilon * Constants.playerWidth) {
+            return true;
+        }
+        return false;
     }
 
     private GameState updateState(GameState transforming, String userId, Action action) {
@@ -166,7 +183,8 @@ public class Engine {
     Function<PlayerState, PlayerState> turn(String id, Direction desiredDirection) {
         return ps -> {
             if (ps.player.id.equals(id) && ps.status == Status.ALIVE) {
-                return new PlayerState(ps.player, ps.location, ps.direction, desiredDirection, ps.status);
+                Direction direction = desiredDirection.isParallell(ps.direction) ? desiredDirection : ps.direction;
+                return new PlayerState(ps.player, ps.location, direction, desiredDirection, ps.status);
             } else {
                 return ps;
             }

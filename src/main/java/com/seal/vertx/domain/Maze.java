@@ -112,6 +112,29 @@ public class Maze {
         return Constants.timeStep;
     }
 
+    public float timeToTurnPoint(Location location, Direction direction, Direction desiredDirection) {
+        List<Integer> colsToCheck = colsToCheck(location);
+        List<Integer> rowsToCheck = rowsToCheck(location);
+        List<GridCoordinates> boundary = getBoundary(direction, colsToCheck, rowsToCheck);
+        float timeToImpactDesiredDirection = timeToWallImpact(location, desiredDirection);
+        if (timeToImpactDesiredDirection > Constants.wallEpsilon*Constants.playerWidth/Constants.speed) {
+            return 0;
+        }
+        GridCoordinates b1 = boundary.get(0);
+        float timeSpent = CollisionDetection.timeToImpact(location, direction.getX(), direction.getY(),
+                new Location(b1.x * Constants.playerWidth, b1.y * Constants.playerWidth), 0, 0);
+        Location virtualLocation = new Location(location.x + timeSpent * direction.getX(), location.y + direction.getY());
+        while (timeSpent < Constants.timeStep) {
+            timeToImpactDesiredDirection = timeToWallImpact(location, desiredDirection);
+            if (timeToImpactDesiredDirection > Constants.wallEpsilon/Constants.speed) {
+                return timeSpent;
+            }
+            virtualLocation = new Location(virtualLocation.x + Constants.playerWidth, virtualLocation.y + Constants.playerWidth);
+            timeSpent += Constants.playerWidth/Constants.speed;
+        }
+        return Constants.timeStep + 1;
+    }
+
     private boolean anyWallInBoundary(List<GridCoordinates> boundary) {
         for (GridCoordinates square : boundary) {
             if (square.x >= grid.length || square.x < 0 || square.y >= grid[0].length || square.y < 0) {
@@ -188,9 +211,5 @@ public class Maze {
             colsToCheck.add(colf > coli ? coli + 1 : coli - 1);
         }
         return colsToCheck;
-    }
-
-    public float timeToTurnPoint(Location location, Direction direction, Direction desiredDirection) {
-        return 0;
     }
 }

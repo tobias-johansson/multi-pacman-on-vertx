@@ -37,4 +37,8 @@ public enum Direction {
                 throw new RuntimeException("Unimplemented direction");
         }
     }
+
+    public boolean isParallell(Direction other) {
+        return (getX() == 0) == (other.getX() == 0);
+    }
 }
