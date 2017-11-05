@@ -10,19 +10,20 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 public class App {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
+
     public static void main(String[] args) throws IOException {
-    	// one time gen of our datafile
-    	//Maze.parseMazeFile("client/platzhersh.json", "client/maze.json");
-    	
+        Logging.configure();
+        // one time gen of our datafile
+        // Maze.parseMazeFile("client/platzhersh.json", "client/maze.json");
+
         Vertx vertx = Vertx.vertx();
         HttpServer server = vertx.createHttpServer();
 
