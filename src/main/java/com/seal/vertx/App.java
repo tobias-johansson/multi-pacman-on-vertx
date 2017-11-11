@@ -28,6 +28,9 @@ public class App {
         HttpServer server = vertx.createHttpServer();
 
         Router router = Router.router(vertx);
+
+        router.route("/").handler(ctx -> ctx.response().putHeader("Location", "/client/").setStatusCode(302).end());
+
         router.route("/client/*").handler(StaticHandler.create("client"));
 
         // pipe ws <-> vertx bux
