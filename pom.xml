@@ -101,6 +101,30 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <imageName>docker.seal-software.net/pacman</imageName>
+                    <baseImage>anapsix/alpine-java</baseImage>
+                    <cmd>java -jar /${project.build.finalName}.jar</cmd>
+                    <exposes>
+                        <expose>8080</expose>
+                    </exposes>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                        <resource>
+                            <targetPath>/client</targetPath>
+                            <directory>${project.basedir}/client</directory>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
